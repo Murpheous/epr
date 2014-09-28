@@ -136,7 +136,7 @@ namespace EprGrapics
             } */
             // Now do an EPR visualisation
             PhotonA.MakeCircular(dSourceAxis * (Math.PI / 180.0), true, (dPhaseDeg) * (Math.PI / 180.0));
-            PhotonB.MakeCircular(dSourceAxis * (Math.PI / 180.0), true, (dPhaseDeg) * (Math.PI / 180.0));
+            PhotonB.MakeCircular(dSourceAxis * (Math.PI / 180.0), false, (-dPhaseDeg) * (Math.PI / 180.0));
             Analyzer_A.ShowDial();
             int nResultA = PhotonA.Analyze(Analyzer_A, true, Color.Azure);
             Analyzer_B.ShowDial();

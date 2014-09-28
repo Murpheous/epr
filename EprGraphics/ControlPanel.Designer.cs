@@ -383,7 +383,7 @@
             this.Controls.Add(this.label6);
             this.MinimumSize = new System.Drawing.Size(50, 39);
             this.Name = "ControlPanel";
-            this.Text = "Initial Settings";
+            this.Text = "Polarization Mapping Tests";
             this.Load += new System.EventHandler(this.ControlPanel_Load);
             ((System.ComponentModel.ISupportInitialize)(this.trackBarTheta)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackPhi1)).EndInit();
