@@ -15,10 +15,6 @@ namespace EprGrapics
         double dPhaseSliderDeg;
         clFilter Analyzer_A;
         clFilter Analyzer_B;
-        int _MaxOnScreen = 16;
-        double _dScaleFactor = 350.0d;
-        bool _useLogScale = false;
-        bool _alignEven = true;
         public ControlPanel()
         {
             InitializeComponent();
@@ -40,9 +36,9 @@ namespace EprGrapics
             lblMapped.Text = String.Format("{0:f}", dMapped);
             clPhoton MyPhoton = new clPhoton();
             int nPhase; int nYes = 0; int nNo = 0; int nCount = 0;
-            for (nPhase = 0; nPhase < 3600; nPhase++)
+            for (nPhase = 0; nPhase < 360; nPhase++)
             {
-                MyPhoton.MakeLinear(dSourceAxis * (Math.PI / 180.0), (nPhase / 10) * (Math.PI / 180.0));
+                MyPhoton.MakeLinearDeg(dSourceAxis, nPhase);
                 switch (MyPhoton.Analyze(Analyzer_A, false))
                 {
                     case 1:

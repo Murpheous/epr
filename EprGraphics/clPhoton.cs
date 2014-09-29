@@ -119,6 +119,7 @@ namespace EprGrapics
         public double phaseAngleDeg
         {
             get { return _phaseAngle * 180.0 / Math.PI; }
+            set { _phaseAngle = EprMath.Limit180(((value * Math.PI)/180.0)); }
         }
 
         public double spinAxis
@@ -142,6 +143,22 @@ namespace EprGrapics
         {
             get { return _spinAzimuth * 180.0 / Math.PI; }
         }
+        public double SignedVectorAngle(Vector3 aVect, Vector3 bVect)
+        {
+            double dot = Vector3.DotProduct(aVect, bVect);
+            if (dot > 1.0)
+                dot = 1.0;
+            if (dot < -1.0)
+                dot = -1.0;
+            double result = Math.Acos(dot);
+            if (dot != 0.0)
+            {
+                Vector3 cross = Vector3.CrossProduct(aVect, bVect);
+                if (Vector3.DotProduct(cross, bVect) < 0.0)
+                    result = -result;
+            }
+            return result;
+        }
 
         public bool Analyze( clFilter MyAnalyzer)
         {
@@ -157,17 +174,14 @@ namespace EprGrapics
             // Now rotate the phaseVector about the spin Axis by the Azimuth angle of the photon
             phaseVector.Yaw(spinAzimuthDeg);
             // Now rotate the phaseVector about its Z axis by the phase angle
-            phaseVector.Roll(phaseAngleDeg);
+            phaseVector.Pitch(phaseAngleDeg);
             // Now we need a new 'phase' angle which is the angle betweem the phase vector and the analyer Z vector.
             Vector3 zVect = new Vector3(0,0,1);
-            double dot = Vector3.DotProduct(zVect, phaseVector);
-            double mappedPhase = Math.Acos(dot);
-            if (dot != 0.0)
-            {
-                Vector3 cross = Vector3.CrossProduct(zVect, phaseVector);
-                if (Vector3.DotProduct(zVect, phaseVector) < 0.0)
-                    mappedPhase = -mappedPhase;
-            }
+            double mappedPhaseAxis = EprMath.Limit90(SignedVectorAngle(zVect, phaseVector)); // Note limit90 treats vector as an axis
+            // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
+            Vector3 yVect = new Vector3(0,1,0);
+            double mappedSpinAxis = EprMath.Limit90(SignedVectorAngle(yVect, spinAxisVector)); // Note limit90 treats vector as an axis
+ 
             return bResult;
         }
 
@@ -189,7 +203,11 @@ namespace EprGrapics
         {
             phasor = new clPhasor(argSourceAxis,0.0, true, dArgPhase);
         }
-       public void MakeCircular( double argSourceAxis, bool argbPhaseSense, double dArgPhase)
+        public void MakeLinearDeg(double argSourceAxis, double dArgPhase)
+        {
+            phasor = new clPhasor((argSourceAxis * Math.PI/180.0), 0.0, true, (dArgPhase * Math.PI/180.0));
+        }
+        public void MakeCircular(double argSourceAxis, bool argbPhaseSense, double dArgPhase)
         {
            
            phasor = new clPhasor( argSourceAxis, EprMath.dHalfPi, argbPhaseSense, dArgPhase);
