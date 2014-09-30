@@ -67,13 +67,13 @@
             this.trackBarTheta.LargeChange = 1;
             this.trackBarTheta.Location = new System.Drawing.Point(131, 1);
             this.trackBarTheta.Margin = new System.Windows.Forms.Padding(3, 3, 3, 1);
-            this.trackBarTheta.Maximum = 450;
+            this.trackBarTheta.Maximum = 360;
             this.trackBarTheta.Name = "trackBarTheta";
             this.trackBarTheta.Size = new System.Drawing.Size(999, 45);
             this.trackBarTheta.TabIndex = 1;
             this.trackBarTheta.TickFrequency = 10;
             this.trackBarTheta.TickStyle = System.Windows.Forms.TickStyle.Both;
-            this.trackBarTheta.Value = 225;
+            this.trackBarTheta.Value = 180;
             this.trackBarTheta.Scroll += new System.EventHandler(this.trackBarTheta_Scroll);
             // 
             // label1

@@ -28,7 +28,7 @@ namespace EprGrapics
         private void trackBarTheta_Scroll(object sender, EventArgs e)
         {
             double dMapped;
-            dSourceAxis = (trackBarTheta.Value - 225.0) / 2.0;
+            dSourceAxis = ((double)trackBarTheta.Value - trackBarTheta.Maximum/2.0) / 2.0;
             UpdateUi();
             dMapped = (dSourceAxis * Math.PI) / 180.0;
             dMapped = EprMath.ExtendedSineSq(dMapped);
@@ -64,7 +64,7 @@ namespace EprGrapics
             Analyzer_B = new clFilter(0);
             Analyzer_A.ShowDial(pictureBox1);
             Analyzer_B.ShowDial(pictureBox2);
-            trackBarTheta.Value = 202;
+            trackBarTheta.Value = (trackBarTheta.Maximum - trackBarTheta.Minimum)/2;
             UpdateUi();
         }
 

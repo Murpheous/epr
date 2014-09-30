@@ -90,9 +90,25 @@ namespace EprGrapics
         double _spinAzimuth;
         
         double _phasorMapped;
+        double _phaseLowerOnMap;
+        double _phaseCentreOnMap;
+        double _phaseUpperOnMap;
+
         public double MappedPhasor
         {
         	get {return _phasorMapped;}
+        }
+        public double PhaseUpper
+        {
+            get { return _phaseUpperOnMap; }
+        }
+        public double PhaseCentre
+        {
+            get { return _phaseCentreOnMap; }
+        }
+        public double PhaseLower
+        {
+            get { return _phaseLowerOnMap; }
         }
 
         public int nPhaseSense
@@ -151,7 +167,7 @@ namespace EprGrapics
             if (dot < -1.0)
                 dot = -1.0;
             double result = Math.Acos(dot);
-            if (dot != 0.0)
+            if (result != 0.0)
             {
                 Vector3 cross = Vector3.CrossProduct(aVect, bVect);
                 if (Vector3.DotProduct(cross, bVect) < 0.0)
@@ -164,12 +180,16 @@ namespace EprGrapics
         {
             bool bResult = true;
             int nFlip = 0;
+            Vector3 upAxis = new Vector3(0, 1, 0);
+            Vector3 sideAxis = new Vector3(0, 0, 1);
+            Vector3 throughAxis = new Vector3(1, 0, 0);
+
            // Choose Y axis as up, Z axis as Left, and X axis is into analyzer.
-            Vector3 spinAxisVector = new Vector3(0, 1, 0);
+            Vector3 spinAxisVector = new Vector3(upAxis);
             // Start by setting the 'spin axis' in space
-            spinAxisVector.RotateAroundX(spinAxis);
+            spinAxisVector.RotateAroundThrough(spinAxis);
             // Now set the photon Axis relative to the Analyzer by rotataing back in the opposite direction to the Analyzer axis in space.
-            spinAxisVector.RotateAroundX(-MyAnalyzer.Axis);
+            spinAxisVector.RotateAroundThrough(-MyAnalyzer.Axis);
             // We need to treat the vector as an Axis, so if it points downward (below Y), flip it 180 degrees in the XY plane.
             if (spinAxisVector.Y < 0)
             {  // Flip Axis vector 180 degrees around X by changing sign of Y & Z
@@ -192,20 +212,29 @@ namespace EprGrapics
             // Now get the phase vector by first setting it to the zero phase position (i.e aligned with the spin axis).
             Vector3 phaseVector = new Vector3(spinAxisVector);
             // Now rotate the phaseVector about the spin Axis by the Azimuth angle of the photon
-            phaseVector.RotateAroundY(spinAzimuth);
-            // Now rotate the phaseVector about its Z axis by the phase angle
-            phaseVector.RotateAroundX(phaseAngle);
-            // Now we need a new 'phase' angle which is the angle betweem the phase vector and the analyer Z vector.
-            Vector3 zVect = new Vector3(0,0,1);
-            double mappedPhaseAxis = EprMath.Limit90(SignedVectorAngle(zVect, phaseVector)); // Note limit90 treats vector as an axis
+            if (spinAzimuth != 0.0)
+                phaseVector.RotateAroundUp(spinAzimuth);
+            // Now rotate the phaseVector about its local 'Through' axis by the phase angle
+            phaseVector.RotateAroundThrough(phaseAngle);
+            // Now we need a new 'phase' angle which is the angle betweem the phase vector and the analyer in (X) vector.
+            double mappedPhaseAxisTheta = EprMath.Limit90(SignedVectorAngle(throughAxis, phaseVector)); // Note limit90 treats vector as an axis
             // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
-            Vector3 yVect = new Vector3(0,1,0);
+            
 
             // ************** From here we deal with the analyzer map
-            double mappedSpinAxis = 2.0 * EprMath.Limit90(SignedVectorAngle(yVect, spinAxisVector)); // Note limit90 treats vector as an axis
+            _phaseCentreOnMap = SignedVectorAngle(upAxis, spinAxisVector); // Note limit90 treats vector as an axis
+            _phaseCentreOnMap = EprMath.ExtendedSineSq(_phaseCentreOnMap)*Math.PI;
             // Now Calculate the +- 90 degrees Phase Limits
-            double phaseStart = EprMath.Limit180(mappedSpinAxis - EprMath.dHalfPi);
-            double phaseEnd = EprMath.Limit180(mappedSpinAxis + EprMath.dHalfPi);   
+            _phaseLowerOnMap = EprMath.Limit180(_phaseCentreOnMap - EprMath.dHalfPi);
+            _phaseUpperOnMap = EprMath.Limit180(_phaseCentreOnMap + EprMath.dHalfPi);
+            if (nFlip != 0)
+            {
+                bResult = !bResult;
+                _phaseLowerOnMap = EprMath.Limit180(_phaseLowerOnMap + Math.PI);
+                _phaseCentreOnMap = EprMath.Limit180(_phaseCentreOnMap + Math.PI);
+                _phaseUpperOnMap = EprMath.Limit180(_phaseUpperOnMap + Math.PI);
+                _phasorMapped = EprMath.Limit180(_phasorMapped + Math.PI);
+            }
             return bResult;
         }
 
