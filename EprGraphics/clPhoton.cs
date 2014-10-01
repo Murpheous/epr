@@ -216,14 +216,15 @@ namespace EprGrapics
                 phaseVector.RotateAroundUp(spinAzimuth);
             // Now rotate the phaseVector about its local 'Through' axis by the phase angle
             phaseVector.RotateAroundThrough(phaseAngle);
-            // Now we need a new 'phase' angle which is the angle betweem the phase vector and the analyer in (X) vector.
+            // Now we need a new 'phase' angle which is the angle betweem the phase vector and the analyer plane, (perp to X vector).
             double mappedPhaseAxisTheta = EprMath.Limit90(SignedVectorAngle(throughAxis, phaseVector)); // Note limit90 treats vector as an axis
             // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
             
 
             // ************** From here we deal with the analyzer map
             _phaseCentreOnMap = SignedVectorAngle(upAxis, spinAxisVector); // Note limit90 treats vector as an axis
-            _phaseCentreOnMap = EprMath.ExtendedSineSq(_phaseCentreOnMap)*Math.PI;
+            _phaseCentreOnMap = EprMath.ExtendedSineSq(_phaseCentreOnMap);
+            _phaseCentreOnMap *= Math.PI;
             // Now Calculate the +- 90 degrees Phase Limits
             _phaseLowerOnMap = EprMath.Limit180(_phaseCentreOnMap - EprMath.dHalfPi);
             _phaseUpperOnMap = EprMath.Limit180(_phaseCentreOnMap + EprMath.dHalfPi);
