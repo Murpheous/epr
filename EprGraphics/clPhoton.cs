@@ -319,6 +319,16 @@ namespace EprGrapics
             nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis*2.0 - MappedPhasor.MappedPhasor)));
             Point PtEnd = new Point(nCentreX + nX, nCentreY - nY);
             MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
+            MyPenB.Color = Color.BlueViolet;
+            nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 - MappedPhasor.PhaseLower)));
+            nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 - MappedPhasor.PhaseLower)));
+            PtEnd = new Point(nCentreX + nX, nCentreY - nY);
+            MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
+            MyPenB.Color = Color.OrangeRed;
+            nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 - MappedPhasor.PhaseUpper)));
+            nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 - MappedPhasor.PhaseUpper)));
+            PtEnd = new Point(nCentreX + nX, nCentreY - nY);
+            MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             MyPicture.Image = MyBitmap;
             MyPicture.Refresh();
             
@@ -340,8 +350,9 @@ namespace EprGrapics
             int nTheta;
             double dTheta, dMappedTheta;
             int nCentreX, nCentreY, nRadius, nX, nY;
-            Pen MyPenA = new Pen(Color.Coral,1);
-            Pen MyPenB = new Pen(Color.Cyan, 1);
+            Pen MyPenA = new Pen(Color.DarkSalmon,1);
+            Pen MyPenB = new Pen(Color.DarkSeaGreen, 1);
+            Pen MyPenC = new Pen(Color.Gray, 1);
 
             if (ArgPicture == null) 
             {
@@ -357,15 +368,22 @@ namespace EprGrapics
             nCentreY = MyPicture.ClientSize.Height / 2;
             Point PtCentre = new Point(nCentreX,nCentreY);
             nRadius = Math.Min(nCentreY, nCentreX) - 3;
-            for (nTheta = -180; nTheta <= 179; nTheta+=3)
+            for (nTheta = -90; nTheta <= 89; nTheta+=3)
             {
                 dTheta = (nTheta * Math.PI)/180.0;
                 dMappedTheta =(EprGrapics.EprMath.ExtendedSineSq(dTheta))*Math.PI+dFilterAxis*2.0;
                 nX = (int)(Math.Round(nRadius * Math.Sin(dMappedTheta)));
                 nY = (int)(Math.Round(nRadius * Math.Cos(dMappedTheta)));
                 Point PtEnd = new Point(nCentreX + nX, nCentreY - nY);
-                //MyBitmap.SetPixel(nCentreX + nX, nCentreY - nY, Color.Coral);
-                MyGraphics.DrawLine(MyPenA, PtCentre, PtEnd);
+                if ((nTheta < -45) || (nTheta > 45))
+                    MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
+                else
+                {
+                    if ((nTheta > -45) && (nTheta < 45))
+                        MyGraphics.DrawLine(MyPenA, PtCentre, PtEnd);
+                    else
+                        MyGraphics.DrawLine(MyPenC, PtCentre, PtEnd);
+                }
             }
             MyPicture.Image = MyBitmap;
             MyPicture.Refresh();
