@@ -159,9 +159,9 @@ namespace EprGrapics
         {
             get { return _spinAzimuth * 180.0 / Math.PI; }
         }
-        public double SignedVectorAngle(Vector3 aVect, Vector3 bVect)
+        public double SignedVectorAngle(Vector3 referenceVector, Vector3 otherVector, Vector3 normalVector)
         {
-            double dot = Vector3.DotProduct(aVect, bVect);
+            double dot = Vector3.DotProduct(referenceVector, otherVector);
             if (dot > 1.0)
                 dot = 1.0;
             if (dot < -1.0)
@@ -169,8 +169,8 @@ namespace EprGrapics
             double result = Math.Acos(dot);
             if (result != 0.0)
             {
-                Vector3 cross = Vector3.CrossProduct(aVect, bVect);
-                if (Vector3.DotProduct(cross, bVect) < 0.0)
+                Vector3 perpVector = Vector3.CrossProduct(normalVector, referenceVector);
+                if (Vector3.DotProduct(perpVector, otherVector) < 0.0)
                     result = -result;
             }
             return result;
@@ -217,12 +217,12 @@ namespace EprGrapics
             // Now rotate the phaseVector about its local 'Through' axis by the phase angle
             phaseVector.RotateAroundThrough(phaseAngle);
             // Now we need a new 'phase' angle which is the angle betweem the phase vector and the analyer plane, (perp to X vector).
-            double mappedPhaseAxisTheta = EprMath.Limit90(SignedVectorAngle(throughAxis, phaseVector)); // Note limit90 treats vector as an axis
+           // double mappedPhaseAxisTheta = EprMath.Limit90(SignedVectorAngle(throughAxis, phaseVector)); // Note limit90 treats vector as an axis
             // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
             
 
             // ************** From here we deal with the analyzer map
-            _phaseCentreOnMap = SignedVectorAngle(upAxis, spinAxisVector); // Note limit90 treats vector as an axis
+            _phaseCentreOnMap = SignedVectorAngle(upAxis, spinAxisVector,throughAxis); // Note limit90 treats vector as an axis
             _phaseCentreOnMap = EprMath.ExtendedSineSq(_phaseCentreOnMap);
             _phaseCentreOnMap *= Math.PI;
             // Now Calculate the +- 90 degrees Phase Limits
@@ -231,11 +231,12 @@ namespace EprGrapics
             if (nFlip != 0)
             {
                 bResult = !bResult;
-                _phaseLowerOnMap = EprMath.Limit180(_phaseLowerOnMap + Math.PI);
-                _phaseCentreOnMap = EprMath.Limit180(_phaseCentreOnMap + Math.PI);
-                _phaseUpperOnMap = EprMath.Limit180(_phaseUpperOnMap + Math.PI);
-                _phasorMapped = EprMath.Limit180(_phasorMapped + Math.PI);
+                _phaseLowerOnMap = EprMath.Limit180(Math.PI -  _phaseLowerOnMap);
+                _phaseCentreOnMap = EprMath.Limit180(-_phaseCentreOnMap);
+                _phaseUpperOnMap = EprMath.Limit180(-_phaseUpperOnMap);
+                _phasorMapped = EprMath.Limit180(Math.PI - _phasorMapped);
             }
+            _phasorMapped = _phaseCentreOnMap;
             return bResult;
         }
 
@@ -316,18 +317,18 @@ namespace EprGrapics
             nCentreY = MyPicture.ClientSize.Height / 2;
             Point PtCentre = new Point(nCentreX, nCentreY);
             nRadius = Math.Min(nCentreY, nCentreX) - 3;
-            nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis*2.0 - MappedPhasor.MappedPhasor)));
-            nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis*2.0 - MappedPhasor.MappedPhasor)));
+            nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis*2.0 + MappedPhasor.MappedPhasor)));
+            nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis*2.0 + MappedPhasor.MappedPhasor)));
             Point PtEnd = new Point(nCentreX + nX, nCentreY - nY);
             MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             MyPenB.Color = Color.BlueViolet;
-            nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 - MappedPhasor.PhaseLower)));
-            nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 - MappedPhasor.PhaseLower)));
+            nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 + MappedPhasor.PhaseLower)));
+            nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 + MappedPhasor.PhaseLower)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
             MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             MyPenB.Color = Color.OrangeRed;
-            nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 - MappedPhasor.PhaseUpper)));
-            nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 - MappedPhasor.PhaseUpper)));
+            nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 + MappedPhasor.PhaseUpper)));
+            nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 + MappedPhasor.PhaseUpper)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
             MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             MyPicture.Image = MyBitmap;
