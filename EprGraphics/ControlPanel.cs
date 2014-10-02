@@ -34,7 +34,7 @@ namespace EprGrapics
             dMapped = EprMath.ExtendedSineSq(dMapped);
             dMapped = dMapped * 90;
             lblMapped.Text = String.Format("{0:f}", dMapped);
-            clPhoton MyPhoton = new clPhoton();
+/*          clPhoton MyPhoton = new clPhoton();
             int nPhase; int nYes = 0; int nNo = 0; int nCount = 0;
             for (nPhase = 0; nPhase < 360; nPhase++)
             {
@@ -54,7 +54,7 @@ namespace EprGrapics
             }
             string mText;
             mText = String.Format("{0:p}", ((double)nYes / nCount));
-            lblMalus.Text = mText;
+            lblMalus.Text = mText; */
             UpDatePhasorDisplay(dPhaseSliderDeg);
         }
 
@@ -131,8 +131,8 @@ namespace EprGrapics
                      break;
             } */
             // Now do an EPR visualisation
-            PhotonA.MakeCircular(dSourceAxis * (Math.PI / 180.0), true, (dPhaseDeg) * (Math.PI / 180.0));
-            PhotonB.MakeCircular(dSourceAxis * (Math.PI / 180.0), false, (-dPhaseDeg) * (Math.PI / 180.0));
+            PhotonA.MakeCircular(dSourceAxis * (Math.PI / 180.0), true, dPhaseDeg * (Math.PI / 180.0));
+            PhotonB.MakeCircular(dSourceAxis * (Math.PI / 180.0), false, dPhaseDeg * (Math.PI / 180.0));
             Analyzer_A.ShowDial();
             int nResultA = PhotonA.Analyze(Analyzer_A, true, Color.Azure);
             Analyzer_B.ShowDial();

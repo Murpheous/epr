@@ -55,6 +55,7 @@ namespace EprGrapics
             dResult = Math.Asin(dFracPart) + ((nOffset/2) * Math.PI);
             return dResult;
         }
+
         public static double ExtendedSineSq(double ArgTheta)
         {
 // Function GetShift(Theta As Double) As Double
@@ -215,9 +216,11 @@ namespace EprGrapics
             if (spinAzimuth != 0.0)
                 phaseVector.RotateAroundUp(spinAzimuth);
             // Now rotate the phaseVector about its local 'Through' axis by the phase angle
-            phaseVector.RotateAroundThrough(phaseAngle);
+            phaseVector.RotateAroundZ(phaseAngle);
             // Now we need a new 'phase' angle which is the angle betweem the phase vector and the analyer plane, (perp to X vector).
-           // double mappedPhaseAxisTheta = EprMath.Limit90(SignedVectorAngle(throughAxis, phaseVector)); // Note limit90 treats vector as an axis
+            double phaseVectThroughProjection = Vector3.DotProduct(throughAxis, phaseVector);
+
+            double mappedPhaseAxisTheta = Math.Acos(Vector3.DotProduct(throughAxis, phaseVector)); // Note limit90 treats vector as an axis
             // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
             
 
@@ -231,10 +234,10 @@ namespace EprGrapics
             if (nFlip != 0)
             {
                 bResult = !bResult;
-                _phaseLowerOnMap = EprMath.Limit180(Math.PI -  _phaseLowerOnMap);
-                _phaseCentreOnMap = EprMath.Limit180(-_phaseCentreOnMap);
-                _phaseUpperOnMap = EprMath.Limit180(-_phaseUpperOnMap);
-                _phasorMapped = EprMath.Limit180(Math.PI - _phasorMapped);
+                _phaseLowerOnMap = EprMath.Limit180(Math.PI +  _phaseLowerOnMap);
+                _phaseCentreOnMap = EprMath.Limit180(Math.PI + _phaseCentreOnMap);
+                _phaseUpperOnMap = EprMath.Limit180(Math.PI +_phaseUpperOnMap);
+                _phasorMapped = EprMath.Limit180(Math.PI + _phasorMapped);
             }
             _phasorMapped = _phaseCentreOnMap;
             return bResult;
@@ -256,16 +259,16 @@ namespace EprGrapics
         System.Collections.Generic.List<clPhasor> Phasors = new System.Collections.Generic.List<clPhasor>();
         public void MakeLinear(double argSourceAxis, double dArgPhase)
         {
-            phasor = new clPhasor(argSourceAxis,0.0, true, dArgPhase);
+            phasor = new clPhasor(argSourceAxis, EprMath.dHalfPi, true, dArgPhase);
         }
         public void MakeLinearDeg(double argSourceAxis, double dArgPhase)
         {
-            phasor = new clPhasor((argSourceAxis * Math.PI/180.0), 0.0, true, (dArgPhase * Math.PI/180.0));
+            phasor = new clPhasor((argSourceAxis * Math.PI / 180.0), EprMath.dHalfPi, true, (dArgPhase * Math.PI / 180.0));
         }
         public void MakeCircular(double argSourceAxis, bool argbPhaseSense, double dArgPhase)
         {
            
-           phasor = new clPhasor( argSourceAxis, EprMath.dHalfPi, argbPhaseSense, dArgPhase);
+           phasor = new clPhasor( argSourceAxis, 0.0, argbPhaseSense, dArgPhase);
         }
 
         public int Analyze(clFilter Target, bool bShow, Color PenColour)
