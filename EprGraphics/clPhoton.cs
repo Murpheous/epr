@@ -217,14 +217,11 @@ namespace EprGrapics
                 phaseVector.RotateAroundUp(spinAzimuth);
             // Now rotate the phaseVector about its local 'Through' axis by the phase angle
             phaseVector.RotateAroundZ(phaseAngle);
-            // Now we need a new 'phase' angle which is the angle betweem the phase vector and the analyer plane, (perp to X vector).
-            double phaseVectThroughProjection = Vector3.DotProduct(throughAxis, phaseVector);
-
-            double mappedPhaseAxisTheta = Math.Acos(Vector3.DotProduct(throughAxis, phaseVector)); // Note limit90 treats vector as an axis
-            // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
-            
 
             // ************** From here we deal with the analyzer map
+            // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
+
+            // Phase zero and +-180 maps to centre, +- 90 to upper lower 
             _phaseCentreOnMap = SignedVectorAngle(upAxis, spinAxisVector,throughAxis); // Note limit90 treats vector as an axis
             _phaseCentreOnMap = EprMath.ExtendedSineSq(_phaseCentreOnMap);
             _phaseCentreOnMap *= Math.PI;
@@ -239,6 +236,11 @@ namespace EprGrapics
                 _phaseUpperOnMap = EprMath.Limit180(Math.PI +_phaseUpperOnMap);
                 _phasorMapped = EprMath.Limit180(Math.PI + _phasorMapped);
             }
+
+            // Critical Step, the  projection of the phaseVector on the analyzer Y-Z plane
+            double phaseVectThroughProjection = Vector3.DotProduct(throughAxis, phaseVector);
+            Vector3 projectedPhaseOnThrough = (throughAxis * phaseVectThroughProjection);
+            
             _phasorMapped = _phaseCentreOnMap;
             return bResult;
         }
