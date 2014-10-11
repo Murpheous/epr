@@ -31,7 +31,7 @@ namespace EprGrapics
             dSourceAxis = ((double)trackBarTheta.Value - trackBarTheta.Maximum/2.0) / 2.0;
             UpdateUi();
             dMapped = (dSourceAxis * Math.PI) / 180.0;
-            dMapped = EprMath.ExtendedSineSq(dMapped);
+            dMapped = EprMath.ExtendedSineSq(dMapped)*2.0;
             dMapped = dMapped * 90;
             lblMapped.Text = String.Format("{0:f}", dMapped);
 /*          clPhoton MyPhoton = new clPhoton();

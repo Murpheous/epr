@@ -56,6 +56,18 @@ namespace EprGrapics
             return dResult;
         }
 
+        public static double ExtendedArcSinSq(double phaseNorm)
+        {
+            long intpart = (long)Math.Floor(phaseNorm);
+            double fracpart = phaseNorm - intpart;
+            return  Math.Asin(Math.Sqrt(fracpart)) + EprMath.dHalfPi * intpart;
+          }
+
+        public static double ExtendedArcCosSq(double phaseNorm)
+        {
+            return ExtendedArcSinSq(phaseNorm + 0.5) - EprMath.dQuarterPi;
+        }
+
         public static double ExtendedSineSq(double ArgTheta)
         {
 // Function GetShift(Theta As Double) As Double
@@ -238,9 +250,10 @@ namespace EprGrapics
             }
 
             // Critical Step, the  projection of the phaseVector on the analyzer Y-Z plane
-            double phaseVectThroughProjection = Vector3.DotProduct(throughAxis, phaseVector);
-            Vector3 projectedPhaseOnThrough = (throughAxis * phaseVectThroughProjection);
-            
+            double phaseVectScale = Math.Sin(_spinAzimuth);
+            double phaseAdjusted = _phaseCentreOnMap / 2.0;
+            double dTest1 = -EprMath.ExtendedAsin(_phaseLowerOnMap/EprMath.dHalfPi);
+            double dTest2 = dTest1 * 180/Math.PI;
             _phasorMapped = _phaseCentreOnMap;
             return bResult;
         }
@@ -354,8 +367,8 @@ namespace EprGrapics
         }
         public void ShowDial(System.Windows.Forms.PictureBox ArgPicture)
         {
-            int nTheta;
-            double dTheta, dMappedTheta;
+            double thetaDeg;
+            double fracTheta, mappedThetaRad;
             int nCentreX, nCentreY, nRadius, nX, nY;
             Pen MyPenA = new Pen(Color.DarkSalmon,1);
             Pen MyPenB = new Pen(Color.DarkSeaGreen, 1);
@@ -375,18 +388,19 @@ namespace EprGrapics
             nCentreY = MyPicture.ClientSize.Height / 2;
             Point PtCentre = new Point(nCentreX,nCentreY);
             nRadius = Math.Min(nCentreY, nCentreX) - 3;
-            for (nTheta = -90; nTheta <= 89; nTheta+=3)
+            for (thetaDeg = -180; thetaDeg <= 179.999; thetaDeg += 5.625)
             {
-                dTheta = (nTheta * Math.PI)/180.0;
-                dMappedTheta =(EprGrapics.EprMath.ExtendedSineSq(dTheta))*Math.PI+dFilterAxis*2.0;
-                nX = (int)(Math.Round(nRadius * Math.Sin(dMappedTheta)));
-                nY = (int)(Math.Round(nRadius * Math.Cos(dMappedTheta)));
+                fracTheta = (thetaDeg /90);
+                mappedThetaRad =EprGrapics.EprMath.ExtendedAsin(fracTheta);
+                nX = (int)(Math.Round(nRadius * Math.Sin(mappedThetaRad + 2.0 * dFilterAxis)));
+                nY = (int)(Math.Round(nRadius * Math.Cos(mappedThetaRad + 2.0 * dFilterAxis)));
+                double mappedThetaDeg = mappedThetaRad * 180 / Math.PI;
                 Point PtEnd = new Point(nCentreX + nX, nCentreY - nY);
-                if ((nTheta < -45) || (nTheta > 45))
+                if ((mappedThetaDeg < -90) || (mappedThetaDeg > 90))
                     MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
                 else
                 {
-                    if ((nTheta > -45) && (nTheta < 45))
+                    if ((mappedThetaDeg > -90) && (mappedThetaDeg < 90))
                         MyGraphics.DrawLine(MyPenA, PtCentre, PtEnd);
                     else
                         MyGraphics.DrawLine(MyPenC, PtCentre, PtEnd);
