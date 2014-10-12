@@ -6,106 +6,6 @@ using System.Text;
 
 namespace EprGrapics
 {
-    public static class EprMath
-    {
-        public const double dTwoPi = Math.PI * 2.0;
-        public const double dHalfPi = Math.PI / 2.0;
-        public const double dQuarterPi = Math.PI / 4.0;
-        public static double Limit180(double theta)
-        {
-            long nPi;
-            nPi = 0;
-            if (theta >= Math.PI) 
-            {
-                nPi = (long)(Math.Truncate(theta / Math.PI));
-                nPi = (nPi +1)/2;
-                theta = theta - (nPi * dTwoPi);
-            }
-            else if (theta <= -Math.PI)
-            {
-                nPi = (long)(Math.Truncate(theta / Math.PI));
-                nPi = (nPi -1)/2;
-                theta = theta - (nPi * dTwoPi);
-            }
-            return theta;
-        }
-        public static double Limit90(double theta)
-        {
-            theta = Limit180(theta);
-            if (theta > dHalfPi)
-                return theta - Math.PI;
-            if (theta < -dHalfPi)
-                return theta + Math.PI;
-            return theta;
-        }
-
-        public static double ExtendedAsin(double value)
-        {
-            double fractionPart,result;
-            long nOffset, integerPart;
-
-            nOffset = 0;
-            integerPart = (long)Math.Truncate(value);
-            if (integerPart >= 1)
-                nOffset = (integerPart + 1) / 2;
-            else if (integerPart <= -1)
-                nOffset = (integerPart - 1) / 2;
-            nOffset *= 2;
-            fractionPart = value - nOffset;
-           result = Math.Asin(fractionPart) + ((nOffset/2) * Math.PI);
-            return result;
-        }
-
-        public static double ExtendedSin(double theta)
-        {
-            double fractionPart, thetaNormalised, result;
-            long integerPart;
-            thetaNormalised = (theta + EprMath.dHalfPi) / Math.PI;
-            integerPart = (long)Math.Truncate(thetaNormalised);
-            if (thetaNormalised < 0)
-                integerPart--;
-            fractionPart = theta - (integerPart * Math.PI);
-            result = Math.Sin(fractionPart) + integerPart * 2;
-            return result;
-        }
-        public static double ExtendedArcSinSq(double value)
-        {
-            long intpart = (long)Math.Floor(value);
-            double fracpart = value - intpart;
-            return  Math.Asin(Math.Sqrt(fracpart)) + EprMath.dHalfPi * intpart;
-          }
-
-        public static double ExtendedArcCosSq(double value)
-        {
-            return ExtendedArcSinSq(value + 0.5) - EprMath.dQuarterPi;
-        }
-
-        public static double ExtendedSineSq(double theta)
-        {
-// Function GetShift(Theta As Double) As Double
-//Dim IntPart As Double, Fracpart As Double, Result As Double
-            long integerPart;
-            double fractionPart;
-            double dSine;
-            long nOffset;
-            double dOffset;
-            int nSineSign = 1;
-            integerPart = (long)Math.Truncate(theta / dHalfPi);
-            nOffset = 0;
-            if (integerPart >= 1)
-                nOffset = (integerPart + 1) / 2;
-            else if (integerPart <= -1)
-                nOffset = (integerPart - 1) / 2;
-            nOffset *= 2;
-            dOffset = nOffset * dHalfPi;
-            fractionPart = theta - dOffset;
-            dSine = Math.Sin(fractionPart);
-            if (dSine < 0.0)
-                nSineSign = -1;
-            dSine *= (dSine * nSineSign);
-            return dSine + nOffset;
-        }
-    }
 
     class clPhasor
     {
@@ -115,25 +15,25 @@ namespace EprGrapics
         double _spinAzimuth;
         
         double _phasorMapped;
-        double _phaseLowerOnMap;
-        double _phaseCentreOnMap;
-        double _phaseUpperOnMap;
+        double _phaseLowOnAnalyzer;
+        double _phaseMidOnAnalyzer;
+        double _phaseTopOnAnalyzer;
 
         public double MappedPhasor
         {
         	get {return _phasorMapped;}
         }
-        public double PhaseUpper
+        public double PhaseCieling
         {
-            get { return _phaseUpperOnMap; }
+            get { return _phaseTopOnAnalyzer; }
         }
-        public double PhaseCentre
+        public double PhaseMid
         {
-            get { return _phaseCentreOnMap; }
+            get { return _phaseMidOnAnalyzer; }
         }
-        public double PhaseLower
+        public double PhaseFloor
         {
-            get { return _phaseLowerOnMap; }
+            get { return _phaseLowOnAnalyzer; }
         }
 
         public int nPhaseSense
@@ -201,7 +101,7 @@ namespace EprGrapics
             return result;
         }
 
-        public bool Analyze( clFilter MyAnalyzer)
+        public bool Analyze( clFilter analyzer)
         {
             bool bResult = true;
             int nFlip = 0;
@@ -214,7 +114,7 @@ namespace EprGrapics
             // Start by setting the 'spin axis' in space
             spinAxisVector.RotateAroundThrough(spinAxis);
             // Now set the photon Axis relative to the Analyzer by rotataing back in the opposite direction to the Analyzer axis in space.
-            spinAxisVector.RotateAroundThrough(-MyAnalyzer.Axis);
+            spinAxisVector.RotateAroundThrough(-analyzer.Axis);
             // We need to treat the vector as an Axis, so if it points downward (below Y), flip it 180 degrees in the XY plane.
             if (spinAxisVector.Y < 0)
             {  // Flip Axis vector 180 degrees around X by changing sign of Y & Z
@@ -244,29 +144,26 @@ namespace EprGrapics
 
             // ************** From here we deal with the analyzer map
             // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
-
+            double thetaOffset = 2.0*(spinAxis - analyzer.Axis);
             // Phase zero and +-180 maps to centre, +- 90 to upper lower 
-            _phaseCentreOnMap = SignedVectorAngle(upAxis, spinAxisVector,throughAxis); // Note limit90 treats vector as an axis
-            _phaseCentreOnMap = EprMath.ExtendedSineSq(_phaseCentreOnMap);
-            _phaseCentreOnMap *= Math.PI;
-            // Now Calculate the +- 90 degrees Phase Limits
-            _phaseLowerOnMap = EprMath.Limit180(_phaseCentreOnMap - EprMath.dHalfPi);
-            _phaseUpperOnMap = EprMath.Limit180(_phaseCentreOnMap + EprMath.dHalfPi);
+            _phaseTopOnAnalyzer = EprMath.ExtendedAsin(1.0) + thetaOffset;
+            _phaseLowOnAnalyzer = EprMath.ExtendedAsin(-1.0) + thetaOffset  ;
+
             if (nFlip != 0)
             {
                 bResult = !bResult;
-                _phaseLowerOnMap = EprMath.Limit180(Math.PI +  _phaseLowerOnMap);
-                _phaseCentreOnMap = EprMath.Limit180(Math.PI + _phaseCentreOnMap);
-                _phaseUpperOnMap = EprMath.Limit180(Math.PI +_phaseUpperOnMap);
+                _phaseLowOnAnalyzer = EprMath.Limit180(Math.PI +  _phaseLowOnAnalyzer);
+                _phaseMidOnAnalyzer = EprMath.Limit180(Math.PI + _phaseMidOnAnalyzer);
+                _phaseTopOnAnalyzer = EprMath.Limit180(Math.PI +_phaseTopOnAnalyzer);
                 _phasorMapped = EprMath.Limit180(Math.PI + _phasorMapped);
             }
 
             // Critical Step, the  projection of the phaseVector on the analyzer Y-Z plane
             double phaseVectScale = Math.Sin(_spinAzimuth);
-            double phaseAdjusted = _phaseCentreOnMap / 2.0;
-            double dTest1 = -EprMath.ExtendedAsin(_phaseLowerOnMap/EprMath.dHalfPi);
+            double phaseAdjusted = _phaseMidOnAnalyzer / 2.0;
+            double dTest1 = -EprMath.ExtendedAsin(_phaseLowOnAnalyzer/EprMath.dHalfPi);
             double dTest2 = dTest1 * 180/Math.PI;
-            _phasorMapped = _phaseCentreOnMap;
+            _phasorMapped = _phaseMidOnAnalyzer;
             return bResult;
         }
 
@@ -279,6 +176,7 @@ namespace EprGrapics
         }
 
      }
+
     class clPhoton
     {
         private clPhasor phasor;
@@ -352,13 +250,13 @@ namespace EprGrapics
             Point PtEnd = new Point(nCentreX + nX, nCentreY - nY);
             MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             MyPenB.Color = Color.BlueViolet;
-            nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 + MappedPhasor.PhaseLower)));
-            nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 + MappedPhasor.PhaseLower)));
+            nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 + MappedPhasor.PhaseFloor)));
+            nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 + MappedPhasor.PhaseFloor)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
             MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             MyPenB.Color = Color.OrangeRed;
-            nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 + MappedPhasor.PhaseUpper)));
-            nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 + MappedPhasor.PhaseUpper)));
+            nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 + MappedPhasor.PhaseCieling)));
+            nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 + MappedPhasor.PhaseCieling)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
             MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             MyPicture.Image = MyBitmap;
