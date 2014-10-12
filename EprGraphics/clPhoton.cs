@@ -11,83 +11,95 @@ namespace EprGrapics
         public const double dTwoPi = Math.PI * 2.0;
         public const double dHalfPi = Math.PI / 2.0;
         public const double dQuarterPi = Math.PI / 4.0;
-        public static double Limit180(double ArgTheta)
+        public static double Limit180(double theta)
         {
             long nPi;
             nPi = 0;
-            if (ArgTheta >= Math.PI) 
+            if (theta >= Math.PI) 
             {
-                nPi = (long)(Math.Truncate(ArgTheta / Math.PI));
+                nPi = (long)(Math.Truncate(theta / Math.PI));
                 nPi = (nPi +1)/2;
-                ArgTheta = ArgTheta - (nPi * dTwoPi);
+                theta = theta - (nPi * dTwoPi);
             }
-            else if (ArgTheta <= -Math.PI)
+            else if (theta <= -Math.PI)
             {
-                nPi = (long)(Math.Truncate(ArgTheta / Math.PI));
+                nPi = (long)(Math.Truncate(theta / Math.PI));
                 nPi = (nPi -1)/2;
-                ArgTheta = ArgTheta - (nPi * dTwoPi);
+                theta = theta - (nPi * dTwoPi);
             }
-            return ArgTheta;
+            return theta;
         }
-        public static double Limit90(double ArgTheta)
+        public static double Limit90(double theta)
         {
-            ArgTheta = Limit180(ArgTheta);
-            if (ArgTheta > dHalfPi)
-                return ArgTheta - Math.PI;
-            if (ArgTheta < -dHalfPi)
-                return ArgTheta + Math.PI;
-            return ArgTheta;
+            theta = Limit180(theta);
+            if (theta > dHalfPi)
+                return theta - Math.PI;
+            if (theta < -dHalfPi)
+                return theta + Math.PI;
+            return theta;
         }
 
-        public static double ExtendedAsin(double ArgInput)
+        public static double ExtendedAsin(double value)
         {
-            double dFracPart, dResult;
-            long nOffset, nIntpart;
+            double fractionPart,result;
+            long nOffset, integerPart;
 
             nOffset = 0;
-            nIntpart = (long)Math.Truncate(ArgInput);
-            if (nIntpart >= 1)
-                nOffset = (nIntpart + 1) / 2;
-            else if (nIntpart <= -1)
-                nOffset = (nIntpart - 1) / 2;
+            integerPart = (long)Math.Truncate(value);
+            if (integerPart >= 1)
+                nOffset = (integerPart + 1) / 2;
+            else if (integerPart <= -1)
+                nOffset = (integerPart - 1) / 2;
             nOffset *= 2;
-            dFracPart = ArgInput - nOffset;
-            dResult = Math.Asin(dFracPart) + ((nOffset/2) * Math.PI);
-            return dResult;
+            fractionPart = value - nOffset;
+           result = Math.Asin(fractionPart) + ((nOffset/2) * Math.PI);
+            return result;
         }
 
-        public static double ExtendedArcSinSq(double phaseNorm)
+        public static double ExtendedSin(double theta)
         {
-            long intpart = (long)Math.Floor(phaseNorm);
-            double fracpart = phaseNorm - intpart;
+            double fractionPart, thetaNormalised, result;
+            long integerPart;
+            thetaNormalised = (theta + EprMath.dHalfPi) / Math.PI;
+            integerPart = (long)Math.Truncate(thetaNormalised);
+            if (thetaNormalised < 0)
+                integerPart--;
+            fractionPart = theta - (integerPart * Math.PI);
+            result = Math.Sin(fractionPart) + integerPart * 2;
+            return result;
+        }
+        public static double ExtendedArcSinSq(double value)
+        {
+            long intpart = (long)Math.Floor(value);
+            double fracpart = value - intpart;
             return  Math.Asin(Math.Sqrt(fracpart)) + EprMath.dHalfPi * intpart;
           }
 
-        public static double ExtendedArcCosSq(double phaseNorm)
+        public static double ExtendedArcCosSq(double value)
         {
-            return ExtendedArcSinSq(phaseNorm + 0.5) - EprMath.dQuarterPi;
+            return ExtendedArcSinSq(value + 0.5) - EprMath.dQuarterPi;
         }
 
-        public static double ExtendedSineSq(double ArgTheta)
+        public static double ExtendedSineSq(double theta)
         {
 // Function GetShift(Theta As Double) As Double
 //Dim IntPart As Double, Fracpart As Double, Result As Double
-            long nIntpart;
-            double dFracPart;
+            long integerPart;
+            double fractionPart;
             double dSine;
             long nOffset;
             double dOffset;
             int nSineSign = 1;
-            nIntpart = (long)Math.Truncate(ArgTheta / dHalfPi);
+            integerPart = (long)Math.Truncate(theta / dHalfPi);
             nOffset = 0;
-            if (nIntpart >= 1)
-                nOffset = (nIntpart + 1) / 2;
-            else if (nIntpart <= -1)
-                nOffset = (nIntpart - 1) / 2;
+            if (integerPart >= 1)
+                nOffset = (integerPart + 1) / 2;
+            else if (integerPart <= -1)
+                nOffset = (integerPart - 1) / 2;
             nOffset *= 2;
             dOffset = nOffset * dHalfPi;
-            dFracPart = ArgTheta - dOffset;
-            dSine = Math.Sin(dFracPart);
+            fractionPart = theta - dOffset;
+            dSine = Math.Sin(fractionPart);
             if (dSine < 0.0)
                 nSineSign = -1;
             dSine *= (dSine * nSineSign);
