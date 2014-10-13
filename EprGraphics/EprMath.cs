@@ -7,9 +7,9 @@ namespace EprGrapics
 {
     public static class EprMath
     {
-        public const double dTwoPi = Math.PI * 2.0;
-        public const double dHalfPi = Math.PI / 2.0;
-        public const double dQuarterPi = Math.PI / 4.0;
+        public const double twoPI = Math.PI * 2.0;
+        public const double halfPI = Math.PI / 2.0;
+        public const double quarterPI = Math.PI / 4.0;
         public static double Limit180(double theta)
         {
             long nPi;
@@ -18,22 +18,22 @@ namespace EprGrapics
             {
                 nPi = (long)(Math.Truncate(theta / Math.PI));
                 nPi = (nPi + 1) / 2;
-                theta = theta - (nPi * dTwoPi);
+                theta = theta - (nPi * twoPI);
             }
             else if (theta <= -Math.PI)
             {
                 nPi = (long)(Math.Truncate(theta / Math.PI));
                 nPi = (nPi - 1) / 2;
-                theta = theta - (nPi * dTwoPi);
+                theta = theta - (nPi * twoPI);
             }
             return theta;
         }
         public static double Limit90(double theta)
         {
             theta = Limit180(theta);
-            if (theta > dHalfPi)
+            if (theta > halfPI)
                 return theta - Math.PI;
-            if (theta < -dHalfPi)
+            if (theta < -halfPI)
                 return theta + Math.PI;
             return theta;
         }
@@ -59,7 +59,7 @@ namespace EprGrapics
         {
             double fractionPart, thetaNormalised, result;
             long integerPart;
-            thetaNormalised = (theta + EprMath.dHalfPi) / Math.PI;
+            thetaNormalised = (theta + EprMath.halfPI) / Math.PI;
             integerPart = (long)Math.Truncate(thetaNormalised);
             if (thetaNormalised < 0)
                 integerPart--;
@@ -71,12 +71,12 @@ namespace EprGrapics
         {
             long intpart = (long)Math.Floor(value);
             double fracpart = value - intpart;
-            return Math.Asin(Math.Sqrt(fracpart)) + EprMath.dHalfPi * intpart;
+            return Math.Asin(Math.Sqrt(fracpart)) + EprMath.halfPI * intpart;
         }
 
         public static double ExtendedArcCosSq(double value)
         {
-            return ExtendedArcSinSq(value + 0.5) - EprMath.dQuarterPi;
+            return ExtendedArcSinSq(value + 0.5) - EprMath.quarterPI;
         }
 
         public static double ExtendedSineSq(double theta)
@@ -89,14 +89,14 @@ namespace EprGrapics
             long nOffset;
             double dOffset;
             int nSineSign = 1;
-            integerPart = (long)Math.Truncate(theta / dHalfPi);
+            integerPart = (long)Math.Truncate(theta / halfPI);
             nOffset = 0;
             if (integerPart >= 1)
                 nOffset = (integerPart + 1) / 2;
             else if (integerPart <= -1)
                 nOffset = (integerPart - 1) / 2;
             nOffset *= 2;
-            dOffset = nOffset * dHalfPi;
+            dOffset = nOffset * halfPI;
             fractionPart = theta - dOffset;
             dSine = Math.Sin(fractionPart);
             if (dSine < 0.0)

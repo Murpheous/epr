@@ -11,8 +11,9 @@ namespace EprGrapics
 {
     public partial class ControlPanel : Form
     {
-        double dSourceAxis;
-        double dPhaseSliderDeg;
+        double sourceAxis;
+        double sourceAzimuthDeg;
+        double sourcePhaseDeg;
         clFilter Analyzer_A;
         clFilter Analyzer_B;
         public ControlPanel()
@@ -22,40 +23,9 @@ namespace EprGrapics
         }
         public void UpdateUi()
         {
-            lblAzimuth.Text = dSourceAxis.ToString();
-
-        }
-        private void trackBarTheta_Scroll(object sender, EventArgs e)
-        {
-            double dMapped;
-            dSourceAxis = ((double)trackBarTheta.Value - trackBarTheta.Maximum/2.0) / 2.0;
-            UpdateUi();
-            dMapped = (dSourceAxis * Math.PI) / 180.0;
-            dMapped = EprMath.ExtendedSineSq(dMapped)*2.0;
-            dMapped = dMapped * 90;
-            lblMapped.Text = String.Format("{0:f}", dMapped);
-/*          clPhoton MyPhoton = new clPhoton();
-            int nPhase; int nYes = 0; int nNo = 0; int nCount = 0;
-            for (nPhase = 0; nPhase < 360; nPhase++)
-            {
-                MyPhoton.MakeLinearDeg(dSourceAxis, nPhase);
-                switch (MyPhoton.Analyze(Analyzer_A, false))
-                {
-                    case 1:
-                        nYes++;
-                        break;
-                    case -1:
-                        nNo++;
-                        break;
-                    default:
-                        break;
-                }
-                nCount++;
-            }
-            string mText;
-            mText = String.Format("{0:p}", ((double)nYes / nCount));
-            lblMalus.Text = mText; */
-            UpDatePhasorDisplay(dPhaseSliderDeg);
+            lblSourceAxis.Text = sourceAxis.ToString();
+            lblPhi.Text = string.Format("{0}°", sourcePhaseDeg);
+            lblSourceAzimuth.Text = string.Format("{0}°", sourceAzimuthDeg);
         }
 
         private void ControlPanel_Load(object sender, EventArgs e)
@@ -68,9 +38,17 @@ namespace EprGrapics
             UpdateUi();
         }
 
-        private void pictureBox2_Click(object sender, EventArgs e)
+        private void trackBarTheta_Scroll(object sender, EventArgs e)
         {
+            sourceAxis = ((double)trackBarTheta.Value - trackBarTheta.Maximum / 2.0) / 2.0;
             UpdateUi();
+            UpDatePhasorDisplay(sourcePhaseDeg, sourceAzimuthDeg);
+        }
+        private void tbPhase_Scroll(object sender, EventArgs e)
+        {
+            sourcePhaseDeg = (tbPhase.Value - 360.0) / 2.0;
+            UpdateUi();
+            UpDatePhasorDisplay(sourcePhaseDeg, sourceAzimuthDeg);
         }
 
         private void trackPhi2_Scroll(object sender, EventArgs e)
@@ -78,7 +56,7 @@ namespace EprGrapics
             Analyzer_B.AxisDeg = (double)(trackPhi2.Value - 180.0) / 2.0;
             lblFilterAz2.Text = (Analyzer_B.AxisDeg).ToString();
             Analyzer_B.ShowDial(pictureBox2);
-            UpDatePhasorDisplay(dPhaseSliderDeg);
+            UpDatePhasorDisplay(sourcePhaseDeg, sourceAzimuthDeg);
         }
 
         private void trackPhi1_Scroll(object sender, EventArgs e)
@@ -86,53 +64,25 @@ namespace EprGrapics
             Analyzer_A.AxisDeg = (double)(trackPhi1.Value - 180) / 2.0;
             lblFilterAz1.Text = (Analyzer_A.AxisDeg).ToString();
             Analyzer_A.ShowDial(pictureBox1);
-            UpDatePhasorDisplay(dPhaseSliderDeg);
+            UpDatePhasorDisplay(sourcePhaseDeg, sourceAzimuthDeg);
         }
 
-        private void label6_Click(object sender, EventArgs e)
+        private void tbTwist_Scroll(object sender, EventArgs e)
         {
-
+            sourceAzimuthDeg = (tbTwist.Value);
+            UpdateUi();
+            UpDatePhasorDisplay(sourcePhaseDeg, sourceAzimuthDeg);
         }
 
-        private void label5_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void pictureBox4_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void UpDatePhasorDisplay(double dPhaseDeg)
+ 
+        private void UpDatePhasorDisplay(double srcPhaseDeg, double srcAzDeg )
         {
             this.SuspendLayout();
             clPhoton PhotonA = new clPhoton();
             clPhoton PhotonB = new clPhoton();
-            /*
-            PhotonA.MakeLinear(dSourceAxis * (Math.PI / 180.0), dPhaseDeg * (Math.PI / 180.0));
-            Analyzer_A.ShowDial();
-            int nResultA = PhotonA.Analyze(Analyzer_A, true,Color.Red);
-            switch (nResultA)
-            {
-            case 1:
-                    lblAnalyzer1Result.Text = "True";
-                    break;
-            case -1:
-                    lblAnalyzer1Result.Text = "False";
-                    break;
-             default:
-                    lblAnalyzer1Result.Text = "Nothing";
-                     break;
-            } */
-            // Now do an EPR visualisation
-            PhotonA.MakeCircular(dSourceAxis * (Math.PI / 180.0), true, dPhaseDeg * (Math.PI / 180.0));
-            PhotonB.MakeCircular(dSourceAxis * (Math.PI / 180.0), false, dPhaseDeg * (Math.PI / 180.0));
+             // Now do an EPR visualisation
+            PhotonA.MakeElliptical(sourceAxis * (Math.PI / 180.0), srcAzDeg * (Math.PI / 180.0), srcPhaseDeg * (Math.PI / 180.0), true);
+            PhotonB.MakeElliptical(sourceAxis * (Math.PI / 180.0), srcAzDeg * (Math.PI / 180.0), srcPhaseDeg * (Math.PI / 180.0), true);
             Analyzer_A.ShowDial();
             int nResultA = PhotonA.Analyze(Analyzer_A, true, Color.Azure);
             Analyzer_B.ShowDial();
@@ -140,19 +90,6 @@ namespace EprGrapics
             lblAnalyzer1Result.Text = nResultA.ToString();
             lblAnalyzer2Result.Text = nResultB.ToString();
             this.ResumeLayout();
-        }
-
-        private void trackBar1_Scroll(object sender, EventArgs e)
-        {
-            dPhaseSliderDeg = (trackBar1.Value - 360.0) / 2.0;
-            lblPhi.Text = dPhaseSliderDeg.ToString();
-            UpDatePhasorDisplay(dPhaseSliderDeg);
-
-        }
-
-        private void lblAnalyzer1Result_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void btnMalus_Click(object sender, EventArgs e)
@@ -171,6 +108,7 @@ namespace EprGrapics
             clPhoton MyPhoton = new clPhoton();
             for (nAxisSteps = 0; nAxisSteps <= nHorizPixels; nAxisSteps++)
             {
+
                 dThetaAxis = (double)nAxisSteps / (double)nHorizPixels;
                 dThetaAxis *= 180;
                 Analyzer_A.AxisDeg = dThetaAxis;
@@ -180,21 +118,10 @@ namespace EprGrapics
                 {
                     double dPhi = (double)nPhiSteps / 10.0;
                     MyPhoton.MakeLinear(0, dPhi * (Math.PI / 180.0));
-                    if (Analyzer_A.AxisDeg > 45.0)
-                    {
-                        if (MyPhoton.Analyze(Analyzer_A, false) > 0)
-                            nYes++;
-                        else
-                            nNo++;
-                    }
+                    if (MyPhoton.Analyze(Analyzer_A, false) > 0)
+                        nYes++;
                     else
-                    {
-                        if (MyPhoton.Analyze(Analyzer_A, false) > 0)
-                            nYes++;
-                        else
-                            nNo++;
-                    }
-
+                        nNo++;
                 }
                 nX = 1 + nAxisSteps;
                 nY = nVertPixels - ((nYes * nVertPixels) / 3600);
@@ -208,7 +135,6 @@ namespace EprGrapics
             picBoxGraph.Image = ScreenBitmap;
             picBoxGraph.Refresh();
             Analyzer_A.AxisDeg = 0;
-
         }
 
 
@@ -282,5 +208,6 @@ namespace EprGrapics
         private void btnRunScatter_Click(object sender, EventArgs e)
         {
         }
+
     }
 }

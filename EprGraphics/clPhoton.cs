@@ -137,40 +137,33 @@ namespace EprGrapics
             // Now get the phase vector by first setting it to the zero phase position (i.e aligned with the spin axis).
             Vector3 phaseVector = new Vector3(spinAxisVector);
             // Now rotate the phaseVector about the spin Axis by the Azimuth angle of the photon
-            if (spinAzimuth != 0.0)
-                phaseVector.RotateAroundUp(spinAzimuth);
+            if (Math.Abs(spinAzimuth) < EprMath.halfPI)
+                phaseVector.RotateAroundUp(Math.Sign(spinAzimuth)*(EprMath.halfPI - Math.Abs(spinAzimuth)));
             // Now rotate the phaseVector about its local 'Through' axis by the phase angle
             phaseVector.RotateAroundZ(phaseAngle);
 
             // ************** From here we deal with the analyzer map
             // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
             double thetaOffset = 2.0*(spinAxis - analyzer.Axis);
+            double phaseRange = EprMath.halfPI + Math.Abs(spinAzimuth);
             // Phase zero and +-180 maps to centre, +- 90 to upper lower 
-            _phaseTopOnAnalyzer = EprMath.ExtendedAsin(1.0) + thetaOffset;
-            _phaseLowOnAnalyzer = EprMath.ExtendedAsin(-1.0) + thetaOffset  ;
-
-            if (nFlip != 0)
-            {
-                bResult = !bResult;
-                _phaseLowOnAnalyzer = EprMath.Limit180(Math.PI +  _phaseLowOnAnalyzer);
-                _phaseMidOnAnalyzer = EprMath.Limit180(Math.PI + _phaseMidOnAnalyzer);
-                _phaseTopOnAnalyzer = EprMath.Limit180(Math.PI +_phaseTopOnAnalyzer);
-                _phasorMapped = EprMath.Limit180(Math.PI + _phasorMapped);
-            }
-
-            // Critical Step, the  projection of the phaseVector on the analyzer Y-Z plane
-            double phaseVectScale = Math.Sin(_spinAzimuth);
-            double phaseAdjusted = _phaseMidOnAnalyzer / 2.0;
-            double dTest1 = -EprMath.ExtendedAsin(_phaseLowOnAnalyzer/EprMath.dHalfPi);
-            double dTest2 = dTest1 * 180/Math.PI;
-            _phasorMapped = _phaseMidOnAnalyzer;
+            _phaseTopOnAnalyzer = phaseRange + thetaOffset;
+            _phaseLowOnAnalyzer = -phaseRange + thetaOffset;
+            _phaseMidOnAnalyzer = EprMath.ExtendedAsin(thetaOffset/EprMath.halfPI);
+            double phaseMin = EprMath.ExtendedSin(_phaseLowOnAnalyzer);
+            double phaseMax = EprMath.ExtendedSin(_phaseTopOnAnalyzer);
+            double phaseDelta = phaseMax - phaseMin; // We scale phase +- 180 to 
+            double phaseMappedDown = ((phaseAngle + Math.PI)/EprMath.twoPI);
+            phaseMappedDown = (phaseMappedDown * phaseDelta) + phaseMin;
+            _phasorMapped = EprMath.ExtendedAsin(phaseMappedDown);
+            bResult = ((_phasorMapped > (-EprMath.halfPI)) && (_phasorMapped <= EprMath.halfPI));
             return bResult;
         }
 
-        public clPhasor(double SpinAxis, double SpinAzimuth, bool PhaseSense, double dArgPhase)
+        public clPhasor(double SpinAxis, double SpinAzimuth, bool PhaseSense, double sourcePhase)
         {
             _bPhaseSense = PhaseSense;
-            phaseAngle = dArgPhase;
+            phaseAngle = sourcePhase;
             spinAxis = SpinAxis;
             spinAzimuth = SpinAzimuth;
         }
@@ -182,18 +175,22 @@ namespace EprGrapics
         private clPhasor phasor;
 
         System.Collections.Generic.List<clPhasor> Phasors = new System.Collections.Generic.List<clPhasor>();
-        public void MakeLinear(double argSourceAxis, double dArgPhase)
+        public void MakeElliptical(double sourceAxis, double sourceAzimuth, double sourcePhase, bool sourceSense)
         {
-            phasor = new clPhasor(argSourceAxis, EprMath.dHalfPi, true, dArgPhase);
+            phasor = new clPhasor(sourceAxis, sourceAzimuth, sourceSense, sourcePhase);
         }
-        public void MakeLinearDeg(double argSourceAxis, double dArgPhase)
+        public void MakeLinear(double sourceAxis, double sourcePhase)
         {
-            phasor = new clPhasor((argSourceAxis * Math.PI / 180.0), EprMath.dHalfPi, true, (dArgPhase * Math.PI / 180.0));
+            MakeElliptical(sourceAxis, 0.0, sourcePhase, true);
         }
-        public void MakeCircular(double argSourceAxis, bool argbPhaseSense, double dArgPhase)
+        public void MakeLinear(double sourceAxis, bool isClockwise, double sourcePhase)
         {
-           
-           phasor = new clPhasor( argSourceAxis, 0.0, argbPhaseSense, dArgPhase);
+            MakeElliptical(sourceAxis, 0.0, sourcePhase, isClockwise);
+        }
+        public void MakeCircular(double sourceAxis, bool isClockwise, double sourcePhase)
+        {
+           int tmpSign = (isClockwise ? 1 : -1);
+           MakeElliptical(sourceAxis, EprMath.halfPI * tmpSign, sourcePhase, isClockwise);
         }
 
         public int Analyze(clFilter Target, bool bShow, Color PenColour)
