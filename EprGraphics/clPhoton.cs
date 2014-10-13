@@ -105,35 +105,20 @@ namespace EprGrapics
         {
             bool bResult = true;
             int nFlip = 0;
+            double analyzerAngle;
             Vector3 upAxis = new Vector3(0, 1, 0);
             Vector3 sideAxis = new Vector3(0, 0, 1);
             Vector3 throughAxis = new Vector3(1, 0, 0);
+            // Check the difference is less than 90 degrees, if so, tweak to keep in +- 90
+            analyzerAngle = EprMath.Limit90(analyzer.Axis);
+            double thetaOffset = 2.0 * (spinAxis - analyzerAngle);
 
            // Choose Y axis as up, Z axis as Left, and X axis is into analyzer.
             Vector3 spinAxisVector = new Vector3(upAxis);
             // Start by setting the 'spin axis' in space
             spinAxisVector.RotateAroundThrough(spinAxis);
             // Now set the photon Axis relative to the Analyzer by rotataing back in the opposite direction to the Analyzer axis in space.
-            spinAxisVector.RotateAroundThrough(-analyzer.Axis);
-            // We need to treat the vector as an Axis, so if it points downward (below Y), flip it 180 degrees in the XY plane.
-            if (spinAxisVector.Y < 0)
-            {  // Flip Axis vector 180 degrees around X by changing sign of Y & Z
-                spinAxisVector.Y = -spinAxisVector.Y;
-                spinAxisVector.Z = -spinAxisVector.Z;
-            }
-            // Now if the Axis is outside +- 45º we flip to reference the B side of the analyzer
-            double zLim = 1.0/Math.Sqrt(2.0);
-            if (spinAxisVector.Z > zLim)
-                nFlip = 1;
-            else if (spinAxisVector.Z < -zLim)
-                nFlip = -1;
-            if (nFlip != 0)
-            { // Rotate 90 degrees by Tansposing Y and Z, keeping Y positive.
-                double tmpZ;
-                tmpZ = spinAxisVector.Y * -nFlip;
-                spinAxisVector.Y = spinAxisVector.Z * nFlip;
-                spinAxisVector.Z = tmpZ;
-            }
+            spinAxisVector.RotateAroundThrough(-analyzerAngle);
             // Now get the phase vector by first setting it to the zero phase position (i.e aligned with the spin axis).
             Vector3 phaseVector = new Vector3(spinAxisVector);
             // Now rotate the phaseVector about the spin Axis by the Azimuth angle of the photon
@@ -141,10 +126,10 @@ namespace EprGrapics
                 phaseVector.RotateAroundUp(Math.Sign(spinAzimuth)*(EprMath.halfPI - Math.Abs(spinAzimuth)));
             // Now rotate the phaseVector about its local 'Through' axis by the phase angle
             phaseVector.RotateAroundZ(phaseAngle);
+            // **** Is the setup more than +- 90 off angle
 
             // ************** From here we deal with the analyzer map
             // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
-            double thetaOffset = 2.0*(spinAxis - analyzer.Axis);
             double phaseRange = EprMath.halfPI + Math.Abs(spinAzimuth);
             // Phase zero and +-180 maps to centre, +- 90 to upper lower 
             _phaseTopOnAnalyzer = phaseRange + thetaOffset;

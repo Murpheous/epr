@@ -103,7 +103,7 @@ namespace EprGrapics
             nHorizPixels = picBoxGraph.ClientSize.Width - 2;
             nVertPixels = picBoxGraph.ClientSize.Height - 2;
             // Loop through from -PI/2 to + PI/2
-            int nAxisSteps, nPhiSteps, nYes;
+            int nAxisSteps, nPhiSteps;
             double dThetaAxis;
             clPhoton MyPhoton = new clPhoton();
             for (nAxisSteps = 0; nAxisSteps <= nHorizPixels; nAxisSteps++)
@@ -113,7 +113,11 @@ namespace EprGrapics
                 dThetaAxis *= 180;
                 Analyzer_A.AxisDeg = dThetaAxis;
                 int nNo = 0;
-                nYes = 0;
+                int nYes = 0;
+                if (Analyzer_A.AxisDeg > 90)
+                {
+                    nYes = 0;
+                }
                 for (nPhiSteps = 0; nPhiSteps < 3600; nPhiSteps++)
                 {
                     double dPhi = (double)nPhiSteps / 10.0;
