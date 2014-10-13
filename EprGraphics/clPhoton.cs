@@ -11,8 +11,8 @@ namespace EprGrapics
     {
         double _phaseAngle;
         bool _bPhaseSense;
-        double _spinAxis;
-        double _spinAzimuth;
+        double _sourceAxis;
+        double _sourceAzimuth;
         
         double _phasorMapped;
         double _phaseLowOnAnalyzer;
@@ -63,26 +63,26 @@ namespace EprGrapics
             set { _phaseAngle = EprMath.Limit180(((value * Math.PI)/180.0)); }
         }
 
-        public double spinAxis
+        public double sourceAxis
         {
-            get { return _spinAxis; }
-            set { _spinAxis = EprMath.Limit180(value);}
+            get { return _sourceAxis; }
+            set { _sourceAxis = EprMath.Limit180(value);}
         }
-        public double spinAxisDeg
+        public double sourceAxisDeg
         {
-            get { return _spinAxis*180.0/Math.PI; }
-        }
-
-        public double spinAzimuth
-        {
-            get { return _spinAzimuth; }
-            set { _spinAzimuth = EprMath.Limit90(value); }
-
+            get { return _sourceAxis*180.0/Math.PI; }
         }
 
-        public double spinAzimuthDeg
+        public double sourceAzimuth
         {
-            get { return _spinAzimuth * 180.0 / Math.PI; }
+            get { return _sourceAzimuth; }
+            set { _sourceAzimuth = EprMath.Limit90(value); }
+
+        }
+
+        public double sourceAzimuthDeg
+        {
+            get { return _sourceAzimuth * 180.0 / Math.PI; }
         }
         public double SignedVectorAngle(Vector3 referenceVector, Vector3 otherVector, Vector3 normalVector)
         {
@@ -104,33 +104,20 @@ namespace EprGrapics
         public bool Analyze( clFilter analyzer)
         {
             bool bResult = true;
-            int nFlip = 0;
-            double analyzerAngle;
+            double analyzerAxis;
+            double incidentAxis;
             Vector3 upAxis = new Vector3(0, 1, 0);
             Vector3 sideAxis = new Vector3(0, 0, 1);
             Vector3 throughAxis = new Vector3(1, 0, 0);
             // Check the difference is less than 90 degrees, if so, tweak to keep in +- 90
-            analyzerAngle = EprMath.Limit90(analyzer.Axis);
-            double thetaOffset = 2.0 * (spinAxis - analyzerAngle);
+            analyzerAxis = EprMath.Limit90(analyzer.Axis);
+            incidentAxis = EprMath.Limit90(sourceAxis);
+            double thetaOffset = 2.0 * (incidentAxis - analyzerAxis);
 
-           // Choose Y axis as up, Z axis as Left, and X axis is into analyzer.
-            Vector3 spinAxisVector = new Vector3(upAxis);
-            // Start by setting the 'spin axis' in space
-            spinAxisVector.RotateAroundThrough(spinAxis);
-            // Now set the photon Axis relative to the Analyzer by rotataing back in the opposite direction to the Analyzer axis in space.
-            spinAxisVector.RotateAroundThrough(-analyzerAngle);
-            // Now get the phase vector by first setting it to the zero phase position (i.e aligned with the spin axis).
-            Vector3 phaseVector = new Vector3(spinAxisVector);
-            // Now rotate the phaseVector about the spin Axis by the Azimuth angle of the photon
-            if (Math.Abs(spinAzimuth) < EprMath.halfPI)
-                phaseVector.RotateAroundUp(Math.Sign(spinAzimuth)*(EprMath.halfPI - Math.Abs(spinAzimuth)));
-            // Now rotate the phaseVector about its local 'Through' axis by the phase angle
-            phaseVector.RotateAroundZ(phaseAngle);
-            // **** Is the setup more than +- 90 off angle
 
             // ************** From here we deal with the analyzer map
             // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
-            double phaseRange = EprMath.halfPI + Math.Abs(spinAzimuth);
+            double phaseRange = EprMath.halfPI + Math.Abs(sourceAzimuth);
             // Phase zero and +-180 maps to centre, +- 90 to upper lower 
             _phaseTopOnAnalyzer = phaseRange + thetaOffset;
             _phaseLowOnAnalyzer = -phaseRange + thetaOffset;
@@ -140,17 +127,17 @@ namespace EprGrapics
             double phaseDelta = phaseMax - phaseMin; // We scale phase +- 180 to 
             double phaseMappedDown = ((phaseAngle + Math.PI)/EprMath.twoPI);
             phaseMappedDown = (phaseMappedDown * phaseDelta) + phaseMin;
-            _phasorMapped = EprMath.ExtendedAsin(phaseMappedDown);
+            _phasorMapped = EprMath.Limit180(EprMath.ExtendedAsin(phaseMappedDown));
             bResult = ((_phasorMapped > (-EprMath.halfPI)) && (_phasorMapped <= EprMath.halfPI));
             return bResult;
         }
 
-        public clPhasor(double SpinAxis, double SpinAzimuth, bool PhaseSense, double sourcePhase)
+        public clPhasor(double srcAxis, double srcAzimuth, bool PhaseSense, double srcPhase)
         {
             _bPhaseSense = PhaseSense;
-            phaseAngle = sourcePhase;
-            spinAxis = SpinAxis;
-            spinAzimuth = SpinAzimuth;
+            phaseAngle = srcPhase;
+            sourceAxis = srcAxis;
+            sourceAzimuth = srcAzimuth;
         }
 
      }

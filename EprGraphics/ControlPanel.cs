@@ -114,14 +114,11 @@ namespace EprGrapics
                 Analyzer_A.AxisDeg = dThetaAxis;
                 int nNo = 0;
                 int nYes = 0;
-                if (Analyzer_A.AxisDeg > 90)
-                {
-                    nYes = 0;
-                }
                 for (nPhiSteps = 0; nPhiSteps < 3600; nPhiSteps++)
                 {
                     double dPhi = (double)nPhiSteps / 10.0;
-                    MyPhoton.MakeLinear(0, dPhi * (Math.PI / 180.0));
+                    //MyPhoton.MakeLinear(0, dPhi * (Math.PI / 180.0));
+                    MyPhoton.MakeElliptical(0,sourceAzimuthDeg*(Math.PI/180),dPhi * (Math.PI / 180),true);  
                     if (MyPhoton.Analyze(Analyzer_A, false) > 0)
                         nYes++;
                     else
