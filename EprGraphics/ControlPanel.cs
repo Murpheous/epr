@@ -11,11 +11,26 @@ namespace EprGrapics
 {
     public partial class ControlPanel : Form
     {
-        double sourceAxis;
+        double _sourceAxis;
         double sourceAzimuthDeg;
         double sourcePhaseDeg;
         clFilter Analyzer_A;
         clFilter Analyzer_B;
+
+        public double sourceAxisDeg
+        {
+            get { return _sourceAxis * 180.0/ Math.PI;}
+            set {
+                _sourceAxis = EprMath.Limit180((value * Math.PI) / 180.0);
+                }
+        }
+        public double sourceAxis
+        {
+            get { return _sourceAxis;}
+            set {
+                _sourceAxis = EprMath.Limit180(value);
+                }
+         }
         public ControlPanel()
         {
             InitializeComponent();
@@ -23,7 +38,7 @@ namespace EprGrapics
         }
         public void UpdateUi()
         {
-            lblSourceAxis.Text = sourceAxis.ToString();
+            lblSourceAxis.Text = string.Format("{0}°",sourceAxisDeg);
             lblPhi.Text = string.Format("{0}°", sourcePhaseDeg);
             lblSourceAzimuth.Text = string.Format("{0}°", sourceAzimuthDeg);
         }
@@ -40,7 +55,7 @@ namespace EprGrapics
 
         private void trackBarTheta_Scroll(object sender, EventArgs e)
         {
-            sourceAxis = ((double)trackBarTheta.Value - trackBarTheta.Maximum / 2.0) / 2.0;
+            sourceAxisDeg = ((double)trackBarTheta.Value - trackBarTheta.Maximum / 2.0) / 2.0;
             UpdateUi();
             UpDatePhasorDisplay(sourcePhaseDeg, sourceAzimuthDeg);
         }
@@ -80,9 +95,11 @@ namespace EprGrapics
             this.SuspendLayout();
             clPhoton PhotonA = new clPhoton();
             clPhoton PhotonB = new clPhoton();
-             // Now do an EPR visualisation
-            PhotonA.MakeElliptical(sourceAxis * (Math.PI / 180.0), srcAzDeg * (Math.PI / 180.0), srcPhaseDeg * (Math.PI / 180.0), true);
-            PhotonB.MakeElliptical(sourceAxis * (Math.PI / 180.0), srcAzDeg * (Math.PI / 180.0), srcPhaseDeg * (Math.PI / 180.0), true);
+            double phi = srcPhaseDeg * (Math.PI / 180.0);
+            double azimuth = srcAzDeg * (Math.PI / 180.0);
+             // Now do a phasor visualisation on two analyzers
+            PhotonA.MakeElliptical(sourceAxis, azimuth, phi, true);
+            PhotonB.MakeElliptical(sourceAxis, azimuth, phi + Math.PI, true);
             Analyzer_A.ShowDial();
             int nResultA = PhotonA.Analyze(Analyzer_A, true, Color.Azure);
             Analyzer_B.ShowDial();
@@ -90,6 +107,19 @@ namespace EprGrapics
             lblAnalyzer1Result.Text = nResultA.ToString();
             lblAnalyzer2Result.Text = nResultB.ToString();
             this.ResumeLayout();
+            int concurCount = 0;
+            int dissentCount = 0;
+            for (int i = 0; i < 3600; i++)
+            {
+                double testAxis = i * Math.PI / 1800.0;
+                PhotonA.MakeElliptical(testAxis, EprMath.halfPI, EprMath.halfPI, true);
+                PhotonB.MakeElliptical(testAxis, EprMath.halfPI, EprMath.halfPI + Math.PI, true);
+                if (PhotonA.Analyze(Analyzer_A, false) == PhotonB.Analyze(Analyzer_B, false))
+                    concurCount++;
+                else
+                    dissentCount++;
+            }
+            LblEprCorrelation.Text = string.Format("{0:F1}%", ((double)concurCount / 36.0));
         }
 
         private void btnMalus_Click(object sender, EventArgs e)
@@ -164,23 +194,21 @@ namespace EprGrapics
                 Analyzer_B.AxisDeg = dThetaBobAxis;
                 int nYes = 0;
                 int nNo = 0;
-                bool bShow = ((nAxisSteps % 100) == 0);
+                //bool bShow = ((nAxisSteps % 100) == 0);
                 for (int nPhotonAngle = 0; nPhotonAngle < 3600; nPhotonAngle++)
                 {
                     double dPhotonAngle = (double)nPhotonAngle / 10.0;
-                    bool bShowPhasor = (bShow && ((nPhotonAngle % 10) == 0));
+                    //bool bShowPhasor = (bShow && ((nPhotonAngle % 10) == 0));
                     //for (int nPhotonPhase = 0; nPhotonPhase < 360; nPhotonPhase++)
                     //	double dPhotonPhase = (double)nPhotonPhase/ 1.0;
-                    MyPhotonAlice.MakeCircular(dPhotonAngle * (Math.PI / 180.0), true, 0);//dPhotonPhase);
-                    MyPhotonBob.MakeCircular((dPhotonAngle) * (Math.PI / 180.0), false, 0);//dPhotonPhase);
-                    bResultAlice = (MyPhotonAlice.Analyze(Analyzer_A, bShowPhasor) > 0);
-                    bResultBob = (MyPhotonBob.Analyze(Analyzer_B, bShowPhasor) > 0);
+                    MyPhotonAlice.MakeElliptical(dPhotonAngle * (Math.PI / 180.0),EprMath.halfPI, EprMath.quarterPI, true);
+                    MyPhotonBob.MakeElliptical(dPhotonAngle * (Math.PI / 180.0),EprMath.halfPI, -EprMath.quarterPI, false);
+                    bResultAlice = (MyPhotonAlice.Analyze(Analyzer_A, false) > 0);
+                    bResultBob = (MyPhotonBob.Analyze(Analyzer_B, false) > 0);
                     if (bResultAlice == bResultBob)
                         nYes++;
                     else
                         nNo++;
-                    if (bShowPhasor)
-                        System.Threading.Thread.Sleep(1);
                 }
                 nX = 1 + nAxisSteps;
                 nY = nVertPixels - ((nYes * nVertPixels) / (3600));
@@ -190,11 +218,6 @@ namespace EprGrapics
                 {
                     picBoxGraph.Image = ScreenBitmap;
                     picBoxGraph.Refresh();
-                    if (bShow)
-                    {
-                        Analyzer_A.ShowDial();
-                        Analyzer_B.ShowDial();
-                    }
                 }
             }
             picBoxGraph.Image = ScreenBitmap;

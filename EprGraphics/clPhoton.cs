@@ -173,7 +173,7 @@ namespace EprGrapics
              if (!phasor.Analyze(Target))
                 nAnswer = -nAnswer;
              if (bShow && Target.GotPicture())
-                Target.ShowMapping(phasor, (nAnswer > 0) ? PenColour : Color.Red);
+                Target.ShowMapping(phasor, (nAnswer > 0) ? PenColour : Color.Gold);
             return nAnswer;
         }
 
@@ -205,7 +205,7 @@ namespace EprGrapics
         public void ShowMapping(clPhasor MappedPhasor, Color PenColor)
         {
             int nCentreX, nCentreY, nRadius, nX, nY;
-            Pen MyPenB = new Pen(PenColor, 1);
+            Pen MyPenB = new Pen(PenColor, 2);
             if (MyPicture == null)
                 return;
             System.Drawing.Bitmap MyBitmap = new Bitmap(MyPicture.Image);
@@ -223,7 +223,7 @@ namespace EprGrapics
             nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 + MappedPhasor.PhaseFloor)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
             MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
-            MyPenB.Color = Color.OrangeRed;
+            MyPenB.Color = Color.Bisque;
             nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 + MappedPhasor.PhaseCieling)));
             nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 + MappedPhasor.PhaseCieling)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
