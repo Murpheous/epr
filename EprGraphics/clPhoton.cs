@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
 using System.Text;
+using System.Windows.Forms;
 
 namespace EprGrapics
 {
@@ -117,7 +118,7 @@ namespace EprGrapics
 
             // ************** From here we deal with the analyzer map
             // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
-            double phaseRange = EprMath.halfPI + Math.Abs(sourceAzimuth);
+            double phaseRange = EprMath.halfPI + EprMath.halfPI*(1-Math.Pow(Math.Cos(sourceAzimuth),2.0));
             // Phase zero and +-180 maps to centre, +- 90 to upper lower 
             _phaseTopOnAnalyzer = phaseRange + thetaOffset;
             _phaseLowOnAnalyzer = -phaseRange + thetaOffset;
@@ -165,7 +166,7 @@ namespace EprGrapics
            MakeElliptical(sourceAxis, EprMath.halfPI * tmpSign, sourcePhase, isClockwise);
         }
 
-        public int Analyze(clFilter Target, bool bShow, Color PenColour)
+        public int Analyze(clFilter Target, bool bShow, Color PenColour, Label lblPhasor)
         {
             int nAnswer = 1;
              if (phasor == null)
@@ -173,13 +174,18 @@ namespace EprGrapics
              if (!phasor.Analyze(Target))
                 nAnswer = -nAnswer;
              if (bShow && Target.GotPicture())
-                Target.ShowMapping(phasor, (nAnswer > 0) ? PenColour : Color.Gold);
+                Target.ShowMapping(phasor, (nAnswer > 0) ? PenColour : Color.Gold, lblPhasor);
             return nAnswer;
+        }
+
+        public int Analyze(clFilter Target, bool bShow, Label lblPhasor)
+        {
+            return (Analyze(Target,bShow,Color.Cyan, lblPhasor));
         }
 
         public int Analyze(clFilter Target, bool bShow)
         {
-            return (Analyze(Target,bShow,Color.Cyan));
+            return (Analyze(Target, bShow, Color.Cyan, null));
         }
 
         public clPhoton()
@@ -202,7 +208,7 @@ namespace EprGrapics
             get { return dFilterAxis*180.0/Math.PI; }
             set { dFilterAxis = EprMath.Limit180(value*Math.PI/180.0); }
         }
-        public void ShowMapping(clPhasor MappedPhasor, Color PenColor)
+        public void ShowMapping(clPhasor MappedPhasor, Color PenColor, Label lblPhasor)
         {
             int nCentreX, nCentreY, nRadius, nX, nY;
             Pen MyPenB = new Pen(PenColor, 2);
@@ -216,6 +222,8 @@ namespace EprGrapics
             nRadius = Math.Min(nCentreY, nCentreX) - 3;
             nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis*2.0 + MappedPhasor.MappedPhasor)));
             nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis*2.0 + MappedPhasor.MappedPhasor)));
+            if (lblPhasor != null)
+                lblPhasor.Text = string.Format("{0:F2}°", (MappedPhasor.MappedPhasor * 180) / Math.PI);
             Point PtEnd = new Point(nCentreX + nX, nCentreY - nY);
             MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             MyPenB.Color = Color.BlueViolet;

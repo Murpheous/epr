@@ -47,13 +47,17 @@
             this.btnMalus = new System.Windows.Forms.Button();
             this.btnEpr = new System.Windows.Forms.Button();
             this.lblAnalyzer2Result = new System.Windows.Forms.Label();
-            this.lblMalus = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
             this.LblEprCorrelation = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.tbTwist = new System.Windows.Forms.TrackBar();
             this.label2 = new System.Windows.Forms.Label();
             this.lblSourceAzimuth = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.lblPhasor1Theta = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
+            this.lblPhasor2Theta = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarTheta)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackPhi1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackPhi2)).BeginInit();
@@ -160,12 +164,12 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(4, 144);
-            this.label4.MinimumSize = new System.Drawing.Size(90, 0);
+            this.label4.Location = new System.Drawing.Point(23, 146);
+            this.label4.MinimumSize = new System.Drawing.Size(70, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(90, 13);
+            this.label4.Size = new System.Drawing.Size(70, 13);
             this.label4.TabIndex = 10;
-            this.label4.Text = "Analyzer 1";
+            this.label4.Text = "Axis θ";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // lblFilterAz2
@@ -183,12 +187,12 @@
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(624, 148);
-            this.label6.MinimumSize = new System.Drawing.Size(90, 0);
+            this.label6.Location = new System.Drawing.Point(644, 148);
+            this.label6.MinimumSize = new System.Drawing.Size(70, 0);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(90, 13);
+            this.label6.Size = new System.Drawing.Size(70, 13);
             this.label6.TabIndex = 12;
-            this.label6.Text = "Analyzer 2";
+            this.label6.Text = "Axis θ";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // lblPhi
@@ -232,7 +236,7 @@
             // 
             this.lblAnalyzer1Result.AutoSize = true;
             this.lblAnalyzer1Result.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblAnalyzer1Result.Location = new System.Drawing.Point(99, 179);
+            this.lblAnalyzer1Result.Location = new System.Drawing.Point(97, 217);
             this.lblAnalyzer1Result.MinimumSize = new System.Drawing.Size(50, 0);
             this.lblAnalyzer1Result.Name = "lblAnalyzer1Result";
             this.lblAnalyzer1Result.Size = new System.Drawing.Size(50, 15);
@@ -241,16 +245,16 @@
             // 
             // picBoxGraph
             // 
-            this.picBoxGraph.Location = new System.Drawing.Point(10, 637);
+            this.picBoxGraph.Location = new System.Drawing.Point(153, 631);
             this.picBoxGraph.Margin = new System.Windows.Forms.Padding(1);
             this.picBoxGraph.Name = "picBoxGraph";
-            this.picBoxGraph.Size = new System.Drawing.Size(1600, 400);
+            this.picBoxGraph.Size = new System.Drawing.Size(1200, 400);
             this.picBoxGraph.TabIndex = 18;
             this.picBoxGraph.TabStop = false;
             // 
             // btnMalus
             // 
-            this.btnMalus.Location = new System.Drawing.Point(22, 537);
+            this.btnMalus.Location = new System.Drawing.Point(26, 633);
             this.btnMalus.Name = "btnMalus";
             this.btnMalus.Size = new System.Drawing.Size(96, 34);
             this.btnMalus.TabIndex = 19;
@@ -260,7 +264,7 @@
             // 
             // btnEpr
             // 
-            this.btnEpr.Location = new System.Drawing.Point(22, 592);
+            this.btnEpr.Location = new System.Drawing.Point(26, 688);
             this.btnEpr.Name = "btnEpr";
             this.btnEpr.Size = new System.Drawing.Size(96, 34);
             this.btnEpr.TabIndex = 20;
@@ -272,41 +276,19 @@
             // 
             this.lblAnalyzer2Result.AutoSize = true;
             this.lblAnalyzer2Result.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblAnalyzer2Result.Location = new System.Drawing.Point(717, 179);
+            this.lblAnalyzer2Result.Location = new System.Drawing.Point(717, 219);
             this.lblAnalyzer2Result.MinimumSize = new System.Drawing.Size(50, 0);
             this.lblAnalyzer2Result.Name = "lblAnalyzer2Result";
             this.lblAnalyzer2Result.Size = new System.Drawing.Size(50, 15);
             this.lblAnalyzer2Result.TabIndex = 21;
             this.lblAnalyzer2Result.Text = "0";
-            // 
-            // lblMalus
-            // 
-            this.lblMalus.AutoSize = true;
-            this.lblMalus.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblMalus.Location = new System.Drawing.Point(99, 234);
-            this.lblMalus.MinimumSize = new System.Drawing.Size(50, 0);
-            this.lblMalus.Name = "lblMalus";
-            this.lblMalus.Size = new System.Drawing.Size(50, 15);
-            this.lblMalus.TabIndex = 25;
-            this.lblMalus.Text = "0";
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(4, 234);
-            this.label5.MinimumSize = new System.Drawing.Size(90, 0);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(90, 13);
-            this.label5.TabIndex = 24;
-            this.label5.Text = "Malus";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lblAnalyzer2Result.Click += new System.EventHandler(this.lblAnalyzer2Result_Click);
             // 
             // LblEprCorrelation
             // 
             this.LblEprCorrelation.AutoSize = true;
             this.LblEprCorrelation.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.LblEprCorrelation.Location = new System.Drawing.Point(681, 247);
+            this.LblEprCorrelation.Location = new System.Drawing.Point(679, 605);
             this.LblEprCorrelation.MinimumSize = new System.Drawing.Size(50, 0);
             this.LblEprCorrelation.Name = "LblEprCorrelation";
             this.LblEprCorrelation.Size = new System.Drawing.Size(50, 15);
@@ -318,7 +300,7 @@
             // 
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(660, 234);
+            this.label7.Location = new System.Drawing.Point(658, 592);
             this.label7.MinimumSize = new System.Drawing.Size(90, 0);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(97, 13);
@@ -364,18 +346,88 @@
             this.lblSourceAzimuth.TabIndex = 32;
             this.lblSourceAzimuth.Text = "0";
             // 
+            // label3
+            // 
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label3.Location = new System.Drawing.Point(23, 219);
+            this.label3.MinimumSize = new System.Drawing.Size(70, 13);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(70, 13);
+            this.label3.TabIndex = 33;
+            this.label3.Text = "Result";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label5
+            // 
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.Location = new System.Drawing.Point(23, 179);
+            this.label5.MinimumSize = new System.Drawing.Size(70, 13);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(70, 13);
+            this.label5.TabIndex = 35;
+            this.label5.Text = "Phasor θ";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lblPhasor1Theta
+            // 
+            this.lblPhasor1Theta.AutoSize = true;
+            this.lblPhasor1Theta.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lblPhasor1Theta.Location = new System.Drawing.Point(97, 179);
+            this.lblPhasor1Theta.MinimumSize = new System.Drawing.Size(50, 0);
+            this.lblPhasor1Theta.Name = "lblPhasor1Theta";
+            this.lblPhasor1Theta.Size = new System.Drawing.Size(50, 15);
+            this.lblPhasor1Theta.TabIndex = 34;
+            this.lblPhasor1Theta.Text = "0";
+            // 
+            // label9
+            // 
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.Location = new System.Drawing.Point(644, 181);
+            this.label9.MinimumSize = new System.Drawing.Size(70, 0);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(70, 13);
+            this.label9.TabIndex = 37;
+            this.label9.Text = "Phasor θ";
+            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lblPhasor2Theta
+            // 
+            this.lblPhasor2Theta.AutoSize = true;
+            this.lblPhasor2Theta.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lblPhasor2Theta.Location = new System.Drawing.Point(720, 181);
+            this.lblPhasor2Theta.MinimumSize = new System.Drawing.Size(50, 0);
+            this.lblPhasor2Theta.Name = "lblPhasor2Theta";
+            this.lblPhasor2Theta.Size = new System.Drawing.Size(50, 15);
+            this.lblPhasor2Theta.TabIndex = 36;
+            this.lblPhasor2Theta.Text = "0";
+            // 
+            // label10
+            // 
+            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label10.Location = new System.Drawing.Point(641, 221);
+            this.label10.MinimumSize = new System.Drawing.Size(70, 0);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(70, 13);
+            this.label10.TabIndex = 38;
+            this.label10.Text = "Result";
+            this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // ControlPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1904, 1041);
+            this.Controls.Add(this.label10);
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.lblPhasor2Theta);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.lblPhasor1Theta);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.lblSourceAzimuth);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.tbTwist);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.LblEprCorrelation);
-            this.Controls.Add(this.lblMalus);
-            this.Controls.Add(this.label5);
             this.Controls.Add(this.lblAnalyzer2Result);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.btnEpr);
@@ -437,13 +489,17 @@
         private System.Windows.Forms.Button btnMalus;
         private System.Windows.Forms.Button btnEpr;
         private System.Windows.Forms.Label lblAnalyzer2Result;
-        private System.Windows.Forms.Label lblMalus;
-        private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label LblEprCorrelation;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.TrackBar tbTwist;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label lblSourceAzimuth;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label lblPhasor1Theta;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label lblPhasor2Theta;
+        private System.Windows.Forms.Label label10;
     }
 }
 

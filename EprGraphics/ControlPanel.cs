@@ -38,9 +38,9 @@ namespace EprGrapics
         }
         public void UpdateUi()
         {
-            lblSourceAxis.Text = string.Format("{0}°",sourceAxisDeg);
-            lblPhi.Text = string.Format("{0}°", sourcePhaseDeg);
-            lblSourceAzimuth.Text = string.Format("{0}°", sourceAzimuthDeg);
+            lblSourceAxis.Text = string.Format("{0:F2}°",sourceAxisDeg);
+            lblPhi.Text = string.Format("{0:F2}°", sourcePhaseDeg);
+            lblSourceAzimuth.Text = string.Format("{0:F2}°", sourceAzimuthDeg);
         }
 
         private void ControlPanel_Load(object sender, EventArgs e)
@@ -99,13 +99,13 @@ namespace EprGrapics
             double azimuth = srcAzDeg * (Math.PI / 180.0);
              // Now do a phasor visualisation on two analyzers
             PhotonA.MakeElliptical(sourceAxis, azimuth, phi, true);
-            PhotonB.MakeElliptical(sourceAxis, azimuth, phi + Math.PI, true);
+            PhotonB.MakeElliptical(sourceAxis, azimuth, phi, true);
             Analyzer_A.ShowDial();
-            int nResultA = PhotonA.Analyze(Analyzer_A, true, Color.Azure);
+            int nResultA = PhotonA.Analyze(Analyzer_A, true, Color.Azure, lblPhasor1Theta);
             Analyzer_B.ShowDial();
-            int nResultB = PhotonB.Analyze(Analyzer_B, true, Color.Azure);
-            lblAnalyzer1Result.Text = nResultA.ToString();
-            lblAnalyzer2Result.Text = nResultB.ToString();
+            int nResultB = PhotonB.Analyze(Analyzer_B, true, Color.Azure,lblPhasor2Theta);
+            lblAnalyzer1Result.Text = (Math.Sign(nResultA) < 0) ? "Bob" : "Alice";
+            lblAnalyzer2Result.Text = (Math.Sign(nResultB) < 0) ? "Bob" : "Alice";
             this.ResumeLayout();
             int concurCount = 0;
             int dissentCount = 0;
@@ -114,7 +114,7 @@ namespace EprGrapics
                 double testAxis = i * Math.PI / 1800.0;
                 PhotonA.MakeElliptical(testAxis, EprMath.halfPI, EprMath.halfPI, true);
                 PhotonB.MakeElliptical(testAxis, EprMath.halfPI, EprMath.halfPI + Math.PI, true);
-                if (PhotonA.Analyze(Analyzer_A, false) == PhotonB.Analyze(Analyzer_B, false))
+                if (PhotonA.Analyze(Analyzer_A, false,null) == PhotonB.Analyze(Analyzer_B, false,null))
                     concurCount++;
                 else
                     dissentCount++;
@@ -155,6 +155,15 @@ namespace EprGrapics
                         nNo++;
                 }
                 nX = 1 + nAxisSteps;
+                double sin2theta = (Math.Cos(dThetaAxis * Math.PI/90));
+                sin2theta = 1.0 - ((sin2theta + 1.0) / 2);
+                nY = (int)(nVertPixels * sin2theta);
+                if (nY > 0)
+                    ScreenBitmap.SetPixel(nX, nY-1, Color.Black);
+                if (nY < nVertPixels)
+                    ScreenBitmap.SetPixel(nX, nY+1, Color.Black);
+                ScreenBitmap.SetPixel(nX, nY, Color.Black);
+            
                 nY = nVertPixels - ((nYes * nVertPixels) / 3600);
                 ScreenBitmap.SetPixel(nX, nY, Color.Coral);
                 if ((nAxisSteps % 5) == 0)
@@ -225,12 +234,9 @@ namespace EprGrapics
             Analyzer_B.AxisDeg = 0;
         }
 
-        private void btnDiffraction_Click(object sender, EventArgs e)
+        private void lblAnalyzer2Result_Click(object sender, EventArgs e)
         {
-        }
 
-        private void btnRunScatter_Click(object sender, EventArgs e)
-        {
         }
 
     }
