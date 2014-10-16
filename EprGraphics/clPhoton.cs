@@ -102,7 +102,7 @@ namespace EprGrapics
             return result;
         }
 
-        public bool Analyze( clFilter analyzer)
+        public bool AnalyzeLinear(clFilter analyzer)
         {
             bool bResult = true;
             double analyzerAxis;
@@ -118,19 +118,33 @@ namespace EprGrapics
 
             // ************** From here we deal with the analyzer map
             // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
-            double phaseRange = EprMath.halfPI + EprMath.halfPI*(1-Math.Pow(Math.Cos(sourceAzimuth),2.0));
+            double phaseRange = EprMath.halfPI + EprMath.halfPI * (1 - Math.Pow(Math.Cos(sourceAzimuth), 2.0));
             // Phase zero and +-180 maps to centre, +- 90 to upper lower 
             _phaseTopOnAnalyzer = phaseRange + thetaOffset;
             _phaseLowOnAnalyzer = -phaseRange + thetaOffset;
-            _phaseMidOnAnalyzer = EprMath.ExtendedAsin(thetaOffset/EprMath.halfPI);
+            _phaseMidOnAnalyzer = EprMath.ExtendedAsin(thetaOffset / EprMath.halfPI);
             double phaseMin = EprMath.ExtendedSin(_phaseLowOnAnalyzer);
             double phaseMax = EprMath.ExtendedSin(_phaseTopOnAnalyzer);
             double phaseDelta = phaseMax - phaseMin; // We scale phase +- 180 to 
-            double phaseMappedDown = ((phaseAngle + Math.PI)/EprMath.twoPI);
+            double phaseMappedDown = ((phaseAngle + Math.PI) / EprMath.twoPI);
             phaseMappedDown = (phaseMappedDown * phaseDelta) + phaseMin;
             _phasorMapped = EprMath.Limit180(EprMath.ExtendedAsin(phaseMappedDown));
             bResult = ((_phasorMapped > (-EprMath.halfPI)) && (_phasorMapped <= EprMath.halfPI));
             return bResult;
+
+        }
+
+        public bool AnalyzeCircular(clFilter analyzer)
+        {
+           bool bResult = true;
+           return bResult;
+        }
+
+        public bool Analyze( clFilter analyzer)
+        {
+            bool bResult = true;
+            
+             return bResult;
         }
 
         public clPhasor(double srcAxis, double srcAzimuth, bool PhaseSense, double srcPhase)
@@ -146,6 +160,24 @@ namespace EprGrapics
     class clPhoton
     {
         private clPhasor phasor;
+        public enum AnalyzeMethod { Linear = 0, Circular = 1 };
+        public enum SelectionResult { Alice = true, Bob = false };
+
+        AnalyzeMethod _method = AnalyzeMethod.Linear;
+        private clPhasor _phTemp;
+
+        public AnalyzeMethod Method
+        {
+            set
+            {
+                if (AnalyzeMethod.IsDefined(typeof(AnalyzeMethod), value))
+                    _method = value;
+                else
+                    _method = AnalyzeMethod.Linear;
+            }
+            get { return _method; }
+        }
+
 
         System.Collections.Generic.List<clPhasor> Phasors = new System.Collections.Generic.List<clPhasor>();
         public void MakeElliptical(double sourceAxis, double sourceAzimuth, double sourcePhase, bool sourceSense)
@@ -166,19 +198,21 @@ namespace EprGrapics
            MakeElliptical(sourceAxis, EprMath.halfPI * tmpSign, sourcePhase, isClockwise);
         }
 
-        public int Analyze(clFilter Target, bool bShow, Color PenColour, Label lblPhasor)
+        public bool Analyze(clFilter Target, bool bShow, Color PenColour, Label lblPhasor)
         {
-            int nAnswer = 1;
              if (phasor == null)
-                return 0;
-             if (!phasor.Analyze(Target))
-                nAnswer = -nAnswer;
-             if (bShow && Target.GotPicture())
-                Target.ShowMapping(phasor, (nAnswer > 0) ? PenColour : Color.Gold, lblPhasor);
-            return nAnswer;
+                return false;
+            bool answer = false;
+            if (Method == AnalyzeMethod.Linear)
+            {
+                answer = phasor.Analyze(Target);
+            }
+                 if (bShow && Target.GotPicture())
+                    Target.ShowMapping(phasor, answer ? PenColour : Color.Gold, lblPhasor);
+             return answer;
         }
 
-        public int Analyze(clFilter Target, bool bShow, Label lblPhasor)
+        public bool Analyze(clFilter Target, bool bShow, Label lblPhasor)
         {
             return (Analyze(Target,bShow,Color.Cyan, lblPhasor));
         }
