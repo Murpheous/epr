@@ -101,11 +101,11 @@ namespace EprGrapics
             PhotonA.MakeElliptical(sourceAxis, azimuth, phi, true);
             PhotonB.MakeElliptical(sourceAxis, azimuth, phi, true);
             Analyzer_A.ShowDial();
-            int nResultA = PhotonA.Analyze(Analyzer_A, true, Color.Azure, lblPhasor1Theta);
+            bool nResultA = PhotonA.Analyze(Analyzer_A, true, Color.Azure, lblPhasor1Theta);
             Analyzer_B.ShowDial();
-            int nResultB = PhotonB.Analyze(Analyzer_B, true, Color.Azure,lblPhasor2Theta);
-            lblAnalyzer1Result.Text = (Math.Sign(nResultA) < 0) ? "Bob" : "Alice";
-            lblAnalyzer2Result.Text = (Math.Sign(nResultB) < 0) ? "Bob" : "Alice";
+            bool nResultB = PhotonB.Analyze(Analyzer_B, true, Color.Azure,lblPhasor2Theta);
+            lblAnalyzer1Result.Text = nResultA ? "Alice" : "Bob";
+            lblAnalyzer2Result.Text = nResultB ? "Alice" : "Bob";
             this.ResumeLayout();
             int concurCount = 0;
             int dissentCount = 0;
@@ -149,7 +149,7 @@ namespace EprGrapics
                     double dPhi = (double)nPhiSteps / 10.0;
                     //MyPhoton.MakeLinear(0, dPhi * (Math.PI / 180.0));
                     MyPhoton.MakeElliptical(0,sourceAzimuthDeg*(Math.PI/180),dPhi * (Math.PI / 180),true);  
-                    if (MyPhoton.Analyze(Analyzer_A, false) > 0)
+                    if (MyPhoton.Analyze(Analyzer_A, false))
                         nYes++;
                     else
                         nNo++;
@@ -212,8 +212,8 @@ namespace EprGrapics
                     //	double dPhotonPhase = (double)nPhotonPhase/ 1.0;
                     MyPhotonAlice.MakeElliptical(dPhotonAngle * (Math.PI / 180.0),EprMath.halfPI, EprMath.quarterPI, true);
                     MyPhotonBob.MakeElliptical(dPhotonAngle * (Math.PI / 180.0),EprMath.halfPI, -EprMath.quarterPI, false);
-                    bResultAlice = (MyPhotonAlice.Analyze(Analyzer_A, false) > 0);
-                    bResultBob = (MyPhotonBob.Analyze(Analyzer_B, false) > 0);
+                    bResultAlice = (MyPhotonAlice.Analyze(Analyzer_A, false));
+                    bResultBob = (MyPhotonBob.Analyze(Analyzer_B, false));
                     if (bResultAlice == bResultBob)
                         nYes++;
                     else
