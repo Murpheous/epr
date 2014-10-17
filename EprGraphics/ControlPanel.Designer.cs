@@ -30,7 +30,7 @@
         {
             this.trackBarTheta = new System.Windows.Forms.TrackBar();
             this.label1 = new System.Windows.Forms.Label();
-            this.lblSourceAxis = new System.Windows.Forms.Label();
+            this.lblPhotonAxis = new System.Windows.Forms.Label();
             this.trackPhi1 = new System.Windows.Forms.TrackBar();
             this.trackPhi2 = new System.Windows.Forms.TrackBar();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -58,6 +58,9 @@
             this.label9 = new System.Windows.Forms.Label();
             this.lblPhasor2Theta = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.rbRotation = new System.Windows.Forms.RadioButton();
+            this.rbPhasors = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarTheta)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackPhi1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackPhi2)).BeginInit();
@@ -66,6 +69,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbPhase)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.picBoxGraph)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbTwist)).BeginInit();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // trackBarTheta
@@ -94,16 +98,16 @@
             this.label1.Text = "Source Axis:";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // lblSourceAxis
+            // lblPhotonAxis
             // 
-            this.lblSourceAxis.AutoSize = true;
-            this.lblSourceAxis.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblSourceAxis.Location = new System.Drawing.Point(91, 16);
-            this.lblSourceAxis.MinimumSize = new System.Drawing.Size(50, 0);
-            this.lblSourceAxis.Name = "lblSourceAxis";
-            this.lblSourceAxis.Size = new System.Drawing.Size(50, 15);
-            this.lblSourceAxis.TabIndex = 3;
-            this.lblSourceAxis.Text = "0";
+            this.lblPhotonAxis.AutoSize = true;
+            this.lblPhotonAxis.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lblPhotonAxis.Location = new System.Drawing.Point(91, 16);
+            this.lblPhotonAxis.MinimumSize = new System.Drawing.Size(50, 0);
+            this.lblPhotonAxis.Name = "lblPhotonAxis";
+            this.lblPhotonAxis.Size = new System.Drawing.Size(50, 15);
+            this.lblPhotonAxis.TabIndex = 3;
+            this.lblPhotonAxis.Text = "0";
             // 
             // trackPhi1
             // 
@@ -215,7 +219,7 @@
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(90, 13);
             this.label8.TabIndex = 15;
-            this.label8.Text = "Phase Angle:";
+            this.label8.Text = "Source Phase:";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // tbPhase
@@ -282,7 +286,6 @@
             this.lblAnalyzer2Result.Size = new System.Drawing.Size(50, 15);
             this.lblAnalyzer2Result.TabIndex = 21;
             this.lblAnalyzer2Result.Text = "0";
-            this.lblAnalyzer2Result.Click += new System.EventHandler(this.lblAnalyzer2Result_Click);
             // 
             // LblEprCorrelation
             // 
@@ -412,11 +415,47 @@
             this.label10.Text = "Result";
             this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.rbRotation);
+            this.groupBox1.Controls.Add(this.rbPhasors);
+            this.groupBox1.Location = new System.Drawing.Point(23, 262);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(118, 75);
+            this.groupBox1.TabIndex = 39;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Analyzer Model";
+            // 
+            // rbRotation
+            // 
+            this.rbRotation.AutoSize = true;
+            this.rbRotation.Location = new System.Drawing.Point(12, 19);
+            this.rbRotation.Name = "rbRotation";
+            this.rbRotation.Size = new System.Drawing.Size(65, 17);
+            this.rbRotation.TabIndex = 1;
+            this.rbRotation.TabStop = true;
+            this.rbRotation.Text = "Rotation";
+            this.rbRotation.UseVisualStyleBackColor = true;
+            this.rbRotation.CheckedChanged += new System.EventHandler(this.rbRotation_CheckedChanged);
+            // 
+            // rbPhasors
+            // 
+            this.rbPhasors.AutoSize = true;
+            this.rbPhasors.Location = new System.Drawing.Point(12, 42);
+            this.rbPhasors.Name = "rbPhasors";
+            this.rbPhasors.Size = new System.Drawing.Size(63, 17);
+            this.rbPhasors.TabIndex = 0;
+            this.rbPhasors.TabStop = true;
+            this.rbPhasors.Text = "Phasors";
+            this.rbPhasors.UseVisualStyleBackColor = true;
+            this.rbPhasors.CheckedChanged += new System.EventHandler(this.rbPhasors_CheckedChanged);
+            // 
             // ControlPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1904, 1041);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.lblPhasor2Theta);
@@ -443,7 +482,7 @@
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.trackPhi2);
             this.Controls.Add(this.trackPhi1);
-            this.Controls.Add(this.lblSourceAxis);
+            this.Controls.Add(this.lblPhotonAxis);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.trackBarTheta);
             this.Controls.Add(this.label6);
@@ -463,6 +502,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbPhase)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.picBoxGraph)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbTwist)).EndInit();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -472,7 +513,7 @@
 
         private System.Windows.Forms.TrackBar trackBarTheta;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label lblSourceAxis;
+        private System.Windows.Forms.Label lblPhotonAxis;
         private System.Windows.Forms.TrackBar trackPhi1;
         private System.Windows.Forms.TrackBar trackPhi2;
         private System.Windows.Forms.PictureBox pictureBox1;
@@ -500,6 +541,9 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label lblPhasor2Theta;
         private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.RadioButton rbRotation;
+        private System.Windows.Forms.RadioButton rbPhasors;
     }
 }
 

@@ -7,84 +7,70 @@ using System.Windows.Forms;
 
 namespace EprGrapics
 {
-    enum AnalyzeMethod { Linear = 0, Circular = 1 };
+    enum AnalyzeMethod { Rotation = 0, Phasors = 1 };
 
     class clPhasor
     {
-        double _phaseAngle;
-        bool _bPhaseSense;
-        double _sourceAxis;
-        double _sourceAzimuth;
+ 
+        double _axis;
+        double _azimuth;
+        double _phase;
+        bool _isClockwise;
         
-        double _phasorMapped;
-        double _phaseLowOnAnalyzer;
-        double _phaseMidOnAnalyzer;
-        double _phaseTopOnAnalyzer;
+        double _phasorResult;
+        double _axisResult;
+        double _phaseCieling;
+        double _phaseFloor;
 
-        public double MappedPhasor
+        public double PhasorResult
         {
-        	get {return _phasorMapped;}
+        	get {return _phasorResult;}
         }
         public double PhaseCieling
         {
-            get { return _phaseTopOnAnalyzer; }
+            get { return _phaseCieling; }
         }
-        public double PhaseMid
+        public double AxisResult
         {
-            get { return _phaseMidOnAnalyzer; }
+            get { return _axisResult; }
         }
         public double PhaseFloor
         {
-            get { return _phaseLowOnAnalyzer; }
+            get { return _phaseFloor; }
         }
 
-        public int nPhaseSense
-		{
-			get {return (_bPhaseSense) ? 1:-1;}
-			set {_bPhaseSense = (value > 0);}
-		}
         public bool PhaseSense
         {
-            get { return _bPhaseSense; }
-            set { _bPhaseSense = value; }
-        }
-		public int nSourceAxisSense
-		{
-			get {return (_bPhaseSense) ? 1:-1;}
-			set {_bPhaseSense = (value >= 0);}
-		}
-        public double phaseAngle
-        {
-            get {return _phaseAngle;}
-            set { _phaseAngle = EprMath.Limit180(value); }
+            get { return _isClockwise; }
+            set { _isClockwise = value; }
         }
 
-        public double phaseAngleDeg
+        public double Phase
         {
-            get { return _phaseAngle * 180.0 / Math.PI; }
-            set { _phaseAngle = EprMath.Limit180(((value * Math.PI)/180.0)); }
+            get {return _phase;}
+            set { _phase = EprMath.Limit180(value); }
         }
 
-        public double sourceAxis
+        public double Axis
         {
-            get { return _sourceAxis; }
-            set { _sourceAxis = EprMath.Limit180(value);}
+            get { return _axis; }
+            set { _axis = EprMath.Limit180(value);}
         }
         public double sourceAxisDeg
         {
-            get { return _sourceAxis*180.0/Math.PI; }
+            get { return _axis*180.0/Math.PI; }
         }
 
         public double sourceAzimuth
         {
-            get { return _sourceAzimuth; }
-            set { _sourceAzimuth = EprMath.Limit90(value); }
+            get { return _azimuth; }
+            set { _azimuth = EprMath.Limit90(value); }
 
         }
 
         public double sourceAzimuthDeg
         {
-            get { return _sourceAzimuth * 180.0 / Math.PI; }
+            get { return _azimuth * 180.0 / Math.PI; }
         }
         public double SignedVectorAngle(Vector3 referenceVector, Vector3 otherVector, Vector3 normalVector)
         {
@@ -106,14 +92,9 @@ namespace EprGrapics
         public bool AnalyzeLinear(clFilter analyzer)
         {
             bool bResult = true;
-            double analyzerAxis;
-            double incidentAxis;
-            Vector3 upAxis = new Vector3(0, 1, 0);
-            Vector3 sideAxis = new Vector3(0, 0, 1);
-            Vector3 throughAxis = new Vector3(1, 0, 0);
             // Check the difference is less than 90 degrees, if so, tweak to keep in +- 90
-            analyzerAxis = EprMath.Limit90(analyzer.Axis);
-            incidentAxis = EprMath.Limit90(sourceAxis);
+            double analyzerAxis = EprMath.Limit90(analyzer.Axis);
+            double incidentAxis = EprMath.Limit90(Axis);
             double thetaOffset = 2.0 * (incidentAxis - analyzerAxis);
 
 
@@ -121,16 +102,16 @@ namespace EprGrapics
             // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
             double phaseRange = EprMath.halfPI + EprMath.halfPI * (1 - Math.Pow(Math.Cos(sourceAzimuth), 2.0));
             // Phase zero and +-180 maps to centre, +- 90 to upper lower 
-            _phaseTopOnAnalyzer = phaseRange + thetaOffset;
-            _phaseLowOnAnalyzer = -phaseRange + thetaOffset;
-            _phaseMidOnAnalyzer = EprMath.ExtendedAsin(thetaOffset / EprMath.halfPI);
-            double phaseMin = EprMath.ExtendedSin(_phaseLowOnAnalyzer);
-            double phaseMax = EprMath.ExtendedSin(_phaseTopOnAnalyzer);
+            _phaseCieling = phaseRange + thetaOffset;
+            _phaseFloor = -phaseRange + thetaOffset;
+            _axisResult = EprMath.ExtendedAsin(thetaOffset / EprMath.halfPI);
+            double phaseMin = EprMath.ExtendedSin(_phaseFloor);
+            double phaseMax = EprMath.ExtendedSin(_phaseCieling);
             double phaseDelta = phaseMax - phaseMin; // We scale phase +- 180 to 
-            double phaseMappedDown = ((phaseAngle + Math.PI) / EprMath.twoPI);
+            double phaseMappedDown = ((Phase + Math.PI) / EprMath.twoPI);
             phaseMappedDown = (phaseMappedDown * phaseDelta) + phaseMin;
-            _phasorMapped = EprMath.Limit180(EprMath.ExtendedAsin(phaseMappedDown));
-            bResult = ((_phasorMapped > (-EprMath.halfPI)) && (_phasorMapped <= EprMath.halfPI));
+            _phasorResult = EprMath.Limit180(EprMath.ExtendedAsin(phaseMappedDown));
+            bResult = ((_phasorResult > (-EprMath.halfPI)) && (_phasorResult <= EprMath.halfPI));
             return bResult;
 
         }
@@ -138,21 +119,40 @@ namespace EprGrapics
         public bool AnalyzeCircular(clFilter analyzer)
         {
            bool bResult = true;
+
+
+           // Check the difference is less than 90 degrees, if so, tweak to keep in +- 90
+           double analyzerAxis = EprMath.Limit90(analyzer.Axis);
+           double incidentAxis = EprMath.Limit90(Axis);
+           double thetaOffset = 2.0 * (incidentAxis - analyzerAxis);
+
            return bResult;
         }
 
-        public bool Analyze( clFilter analyzer)
+        public bool Analyze( clFilter analyzer, AnalyzeMethod method)
         {
-            bool bResult = true;
-            
-             return bResult;
+            switch (method)
+            {
+                case AnalyzeMethod.Rotation:
+                    {
+                    return AnalyzeLinear(analyzer);
+                    }
+                case AnalyzeMethod.Phasors:
+                    {
+                        return AnalyzeCircular(analyzer);
+                    }
+                default:
+                    break;
+            }
+
+             return false;
         }
 
         public clPhasor(double srcAxis, double srcAzimuth, bool PhaseSense, double srcPhase)
         {
-            _bPhaseSense = PhaseSense;
-            phaseAngle = srcPhase;
-            sourceAxis = srcAxis;
+            _isClockwise = PhaseSense;
+            Phase = srcPhase;
+            Axis = srcAxis;
             sourceAzimuth = srcAzimuth;
         }
 
@@ -162,7 +162,7 @@ namespace EprGrapics
     {
         List<clPhasor> Phasors = new List<clPhasor>(); 
                
-        AnalyzeMethod _method = AnalyzeMethod.Linear;
+        AnalyzeMethod _method = AnalyzeMethod.Rotation;
 
         public AnalyzeMethod Method
         {
@@ -171,32 +171,32 @@ namespace EprGrapics
                 if (AnalyzeMethod.IsDefined(typeof(AnalyzeMethod), value))
                     _method = value;
                 else
-                    _method = AnalyzeMethod.Linear;
+                    _method = AnalyzeMethod.Rotation;
             }
             get { return _method; }
         }
 
-        public void MakeElliptical(double sourceAxis, double sourceAzimuth, double sourcePhase, bool sourceSense)
+        public void MakeElliptical(double axis, double sourceAzimuth, double sourcePhase, bool sourceSense)
         {
-            if (Method == AnalyzeMethod.Linear)
+            if (Method == AnalyzeMethod.Rotation)
             { 
                 if (Phasors.Count() > 0)
                     Phasors.Clear();
-                Phasors.Add(new clPhasor(sourceAxis, sourceAzimuth, sourceSense, sourcePhase));
+                Phasors.Add(new clPhasor(axis, sourceAzimuth, sourceSense, sourcePhase));
             }
         }
-        public void MakeLinear(double sourceAxis, double sourcePhase)
+        public void MakeLinear(double axis, double sourcePhase)
         {
-            MakeElliptical(sourceAxis, 0.0, sourcePhase, true);
+            MakeElliptical(axis, 0.0, sourcePhase, true);
         }
-        public void MakeLinear(double sourceAxis, bool isClockwise, double sourcePhase)
+        public void MakeLinear(double axis, bool isClockwise, double sourcePhase)
         {
-            MakeElliptical(sourceAxis, 0.0, sourcePhase, isClockwise);
+            MakeElliptical(axis, 0.0, sourcePhase, isClockwise);
         }
-        public void MakeCircular(double sourceAxis, bool isClockwise, double sourcePhase)
+        public void MakeCircular(double axis, bool isClockwise, double sourcePhase)
         {
            int tmpSign = (isClockwise ? 1 : -1);
-           MakeElliptical(sourceAxis, EprMath.halfPI * tmpSign, sourcePhase, isClockwise);
+           MakeElliptical(axis, EprMath.halfPI * tmpSign, sourcePhase, isClockwise);
         }
 
         public bool Analyze(clFilter Target, bool bShow, Color PenColour, Label lblPhasor)
@@ -204,7 +204,7 @@ namespace EprGrapics
             List <int> answers = new List<int>(Phasors.Count());
             foreach (clPhasor phasor in Phasors)
             { 
-                answers.Add(phasor.Analyze(Target) ? 1 : -1);
+                answers.Add(phasor.Analyze(Target, Method) ? 1 : -1);
             }
             int finalanswer = 1;
             foreach (int n in answers)
@@ -226,8 +226,13 @@ namespace EprGrapics
             return (Analyze(Target, bShow, Color.Cyan, null));
         }
 
+        public clPhoton(AnalyzeMethod analyzeMethod)
+        {
+            Method = analyzeMethod;
+        }
         public clPhoton()
         {
+            Method = AnalyzeMethod.Rotation;
         }
     }
     class clFilter
@@ -260,15 +265,15 @@ namespace EprGrapics
             Point PtEnd; ;
             foreach (clPhasor ph in mappedPhasors)
             {
-                nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 + ph.MappedPhasor)));
-                nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 + ph.MappedPhasor)));
+                nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 + ph.PhasorResult)));
+                nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 + ph.PhasorResult)));
                 PtEnd = new Point(nCentreX + nX, nCentreY - nY);
                 MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             }
-            if (method == AnalyzeMethod.Linear)
+            if (method == AnalyzeMethod.Rotation)
             {
                 if (lblPhasor != null)
-                    lblPhasor.Text = string.Format("{0:F2}°", (mappedPhasors[0].MappedPhasor * 180) / Math.PI);
+                    lblPhasor.Text = string.Format("{0:F2}°", (mappedPhasors[0].PhasorResult * 180) / Math.PI);
                 MyPenB.Color = Color.BlueViolet;
                 nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 + mappedPhasors[0].PhaseFloor)));
                 nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 + mappedPhasors[0].PhaseFloor)));

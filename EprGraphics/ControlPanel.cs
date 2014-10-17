@@ -11,42 +11,44 @@ namespace EprGrapics
 {
     public partial class ControlPanel : Form
     {
-        double _sourceAxis;
-        double sourceAzimuthDeg;
+        double _photonAxis;
+        double _photonAzimuthDeg;
         double sourcePhaseDeg;
         clFilter Analyzer_A;
         clFilter Analyzer_B;
+        AnalyzeMethod analyzeMethod = AnalyzeMethod.Rotation;
 
-        public double sourceAxisDeg
+        public double PhotonAxisDeg
         {
-            get { return _sourceAxis * 180.0/ Math.PI;}
+            get { return _photonAxis * 180.0/ Math.PI;}
             set {
-                _sourceAxis = EprMath.Limit180((value * Math.PI) / 180.0);
+                _photonAxis = EprMath.Limit180((value * Math.PI) / 180.0);
                 }
         }
-        public double sourceAxis
+        public double PhotonAxis
         {
-            get { return _sourceAxis;}
+            get { return _photonAxis;}
             set {
-                _sourceAxis = EprMath.Limit180(value);
+                _photonAxis = EprMath.Limit180(value);
                 }
          }
         public ControlPanel()
         {
             InitializeComponent();
-            UpdateUi();
+            Analyzer_A = new clFilter(0);
+            Analyzer_B = new clFilter(0);
         }
         public void UpdateUi()
         {
-            lblSourceAxis.Text = string.Format("{0:F2}°",sourceAxisDeg);
+            lblPhotonAxis.Text = string.Format("{0:F2}°",PhotonAxisDeg);
             lblPhi.Text = string.Format("{0:F2}°", sourcePhaseDeg);
-            lblSourceAzimuth.Text = string.Format("{0:F2}°", sourceAzimuthDeg);
+            lblSourceAzimuth.Text = string.Format("{0:F2}°", _photonAzimuthDeg);
+            rbRotation.Checked = (analyzeMethod == AnalyzeMethod.Rotation);
+            rbPhasors.Checked = (analyzeMethod == AnalyzeMethod.Phasors);
         }
 
         private void ControlPanel_Load(object sender, EventArgs e)
         {
-            Analyzer_A = new clFilter(0);
-            Analyzer_B = new clFilter(0);
             Analyzer_A.ShowDial(pictureBox1);
             Analyzer_B.ShowDial(pictureBox2);
             trackBarTheta.Value = (trackBarTheta.Maximum - trackBarTheta.Minimum)/2;
@@ -55,15 +57,15 @@ namespace EprGrapics
 
         private void trackBarTheta_Scroll(object sender, EventArgs e)
         {
-            sourceAxisDeg = ((double)trackBarTheta.Value - trackBarTheta.Maximum / 2.0) / 2.0;
+            PhotonAxisDeg = ((double)trackBarTheta.Value - trackBarTheta.Maximum / 2.0) / 2.0;
             UpdateUi();
-            UpDatePhasorDisplay(sourcePhaseDeg, sourceAzimuthDeg);
+            UpDatePhasorDisplay(sourcePhaseDeg, _photonAzimuthDeg);
         }
         private void tbPhase_Scroll(object sender, EventArgs e)
         {
             sourcePhaseDeg = (tbPhase.Value - 360.0) / 2.0;
             UpdateUi();
-            UpDatePhasorDisplay(sourcePhaseDeg, sourceAzimuthDeg);
+            UpDatePhasorDisplay(sourcePhaseDeg, _photonAzimuthDeg);
         }
 
         private void trackPhi2_Scroll(object sender, EventArgs e)
@@ -71,7 +73,7 @@ namespace EprGrapics
             Analyzer_B.AxisDeg = (double)(trackPhi2.Value - 180.0) / 2.0;
             lblFilterAz2.Text = (Analyzer_B.AxisDeg).ToString();
             Analyzer_B.ShowDial(pictureBox2);
-            UpDatePhasorDisplay(sourcePhaseDeg, sourceAzimuthDeg);
+            UpDatePhasorDisplay(sourcePhaseDeg, _photonAzimuthDeg);
         }
 
         private void trackPhi1_Scroll(object sender, EventArgs e)
@@ -79,27 +81,27 @@ namespace EprGrapics
             Analyzer_A.AxisDeg = (double)(trackPhi1.Value - 180) / 2.0;
             lblFilterAz1.Text = (Analyzer_A.AxisDeg).ToString();
             Analyzer_A.ShowDial(pictureBox1);
-            UpDatePhasorDisplay(sourcePhaseDeg, sourceAzimuthDeg);
+            UpDatePhasorDisplay(sourcePhaseDeg, _photonAzimuthDeg);
         }
 
         private void tbTwist_Scroll(object sender, EventArgs e)
         {
-            sourceAzimuthDeg = (tbTwist.Value);
+            _photonAzimuthDeg = (tbTwist.Value);
             UpdateUi();
-            UpDatePhasorDisplay(sourcePhaseDeg, sourceAzimuthDeg);
+            UpDatePhasorDisplay(sourcePhaseDeg, _photonAzimuthDeg);
         }
 
  
         private void UpDatePhasorDisplay(double srcPhaseDeg, double srcAzDeg )
         {
             this.SuspendLayout();
-            clPhoton PhotonA = new clPhoton();
-            clPhoton PhotonB = new clPhoton();
+            clPhoton PhotonA = new clPhoton(analyzeMethod);
+            clPhoton PhotonB = new clPhoton(analyzeMethod);
             double phi = srcPhaseDeg * (Math.PI / 180.0);
             double azimuth = srcAzDeg * (Math.PI / 180.0);
              // Now do a phasor visualisation on two analyzers
-            PhotonA.MakeElliptical(sourceAxis, azimuth, phi, true);
-            PhotonB.MakeElliptical(sourceAxis, azimuth, phi, true);
+            PhotonA.MakeElliptical(PhotonAxis, azimuth, phi, true);
+            PhotonB.MakeElliptical(PhotonAxis, azimuth, phi, true);
             Analyzer_A.ShowDial();
             bool nResultA = PhotonA.Analyze(Analyzer_A, true, Color.Azure, lblPhasor1Theta);
             Analyzer_B.ShowDial();
@@ -135,7 +137,7 @@ namespace EprGrapics
             // Loop through from -PI/2 to + PI/2
             int nAxisSteps, nPhiSteps;
             double dThetaAxis;
-            clPhoton MyPhoton = new clPhoton();
+            clPhoton MyPhoton = new clPhoton(analyzeMethod);
             for (nAxisSteps = 0; nAxisSteps <= nHorizPixels; nAxisSteps++)
             {
 
@@ -148,7 +150,7 @@ namespace EprGrapics
                 {
                     double dPhi = (double)nPhiSteps / 10.0;
                     //MyPhoton.MakeLinear(0, dPhi * (Math.PI / 180.0));
-                    MyPhoton.MakeElliptical(0,sourceAzimuthDeg*(Math.PI/180),dPhi * (Math.PI / 180),true);  
+                    MyPhoton.MakeElliptical(0,_photonAzimuthDeg*(Math.PI/180),dPhi * (Math.PI / 180),true);  
                     if (MyPhoton.Analyze(Analyzer_A, false))
                         nYes++;
                     else
@@ -191,8 +193,8 @@ namespace EprGrapics
             nHorizPixels = picBoxGraph.ClientSize.Width - 2;
             nVertPixels = picBoxGraph.ClientSize.Height - 2;
             picBoxGraph.Refresh();
-            clPhoton MyPhotonAlice = new clPhoton();
-            clPhoton MyPhotonBob = new clPhoton();
+            clPhoton MyPhotonAlice = new clPhoton(analyzeMethod);
+            clPhoton MyPhotonBob = new clPhoton(analyzeMethod);
             double dThetaAliceAxis = 0;
             Analyzer_A.AxisDeg = dThetaAliceAxis;
             double dThetaBobAxis = 0;
@@ -210,8 +212,8 @@ namespace EprGrapics
                     //bool bShowPhasor = (bShow && ((nPhotonAngle % 10) == 0));
                     //for (int nPhotonPhase = 0; nPhotonPhase < 360; nPhotonPhase++)
                     //	double dPhotonPhase = (double)nPhotonPhase/ 1.0;
-                    MyPhotonAlice.MakeElliptical(dPhotonAngle * (Math.PI / 180.0),EprMath.halfPI, EprMath.quarterPI, true);
-                    MyPhotonBob.MakeElliptical(dPhotonAngle * (Math.PI / 180.0),EprMath.halfPI, -EprMath.quarterPI, false);
+                    MyPhotonAlice.MakeElliptical(dPhotonAngle * (Math.PI / 180.0),EprMath.halfPI, EprMath.halfPI, true);
+                    MyPhotonBob.MakeElliptical(dPhotonAngle * (Math.PI / 180.0),EprMath.halfPI, -EprMath.halfPI, false);
                     bResultAlice = (MyPhotonAlice.Analyze(Analyzer_A, false));
                     bResultBob = (MyPhotonBob.Analyze(Analyzer_B, false));
                     if (bResultAlice == bResultBob)
@@ -220,6 +222,14 @@ namespace EprGrapics
                         nNo++;
                 }
                 nX = 1 + nAxisSteps;
+                double sin2theta = (Math.Cos(dThetaBobAxis * Math.PI / 90));
+                sin2theta = ((sin2theta + 1.0) / 2);
+                nY = (int)(nVertPixels * sin2theta);
+                if (nY > 0)
+                    ScreenBitmap.SetPixel(nX, nY - 1, Color.Black);
+                if (nY < nVertPixels)
+                    ScreenBitmap.SetPixel(nX, nY + 1, Color.Black);
+                ScreenBitmap.SetPixel(nX, nY, Color.Black);
                 nY = nVertPixels - ((nYes * nVertPixels) / (3600));
                 ScreenBitmap.SetPixel(nX, nY, Color.Coral);
                 Application.DoEvents();
@@ -234,8 +244,25 @@ namespace EprGrapics
             Analyzer_B.AxisDeg = 0;
         }
 
-        private void lblAnalyzer2Result_Click(object sender, EventArgs e)
+// Select Polarization Analyzer Model
+        private void rbRotation_CheckedChanged(object sender, EventArgs e)
         {
+            if (rbRotation.Checked)
+            {
+                rbPhasors.Checked = false;
+                analyzeMethod = AnalyzeMethod.Rotation;
+                UpDatePhasorDisplay(sourcePhaseDeg, _photonAzimuthDeg);
+            }
+        }
+
+        private void rbPhasors_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rbPhasors.Checked)
+            {
+                rbRotation.Checked = false;
+                analyzeMethod = AnalyzeMethod.Phasors;
+                UpDatePhasorDisplay(sourcePhaseDeg, _photonAzimuthDeg);
+            }
 
         }
 
