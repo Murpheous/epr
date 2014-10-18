@@ -124,8 +124,10 @@ namespace EprGrapics
            // Check the difference is less than 90 degrees, if so, tweak to keep in +- 90
            double analyzerAxis = EprMath.Limit90(analyzer.Axis);
            double incidentAxis = EprMath.Limit90(Axis);
-           double thetaOffset = 2.0 * (incidentAxis - analyzerAxis);
-
+           double thetaOffset = EprMath.Limit90(incidentAxis - analyzerAxis);
+           bool axisFlipped = ((thetaOffset < -EprMath.quarterPI) || (thetaOffset >= EprMath.quarterPI));
+           if (axisFlipped)
+               _axisResult = axisFlipped ? Math.PI : 0;
            return bResult;
         }
 
@@ -184,6 +186,16 @@ namespace EprGrapics
                     Phasors.Clear();
                 Phasors.Add(new clPhasor(axis, sourceAzimuth, sourceSense, sourcePhase));
             }
+            else if (Method == AnalyzeMethod.Phasors)
+            {
+                if (Phasors.Count() > 0)
+                    Phasors.Clear();
+                if (sourceAzimuth == 0.0)
+                {
+                    Phasors.Add(new clPhasor(axis, EprMath.halfPI, sourceSense, sourcePhase));
+                    Phasors.Add(new clPhasor(axis, -EprMath.halfPI, sourceSense, sourcePhase));
+                }
+            }
         }
         public void MakeLinear(double axis, double sourcePhase)
         {
@@ -199,7 +211,7 @@ namespace EprGrapics
            MakeElliptical(axis, EprMath.halfPI * tmpSign, sourcePhase, isClockwise);
         }
 
-        public bool Analyze(clFilter Target, bool bShow, Color PenColour, Label lblPhasor)
+        public bool Analyze(clFilter Target, bool bShow, bool ShowLimits, Label lblPhasor)
         {
             List <int> answers = new List<int>(Phasors.Count());
             foreach (clPhasor phasor in Phasors)
@@ -211,19 +223,14 @@ namespace EprGrapics
                 finalanswer *= n;
             if (bShow && Target.GotPicture())
             {
-                Target.ShowMapping(Phasors, (finalanswer > 0) ? PenColour : Color.Gold, lblPhasor, Method);
+                Target.ShowMapping(Phasors, ShowLimits, lblPhasor, Method);
             }
              return (finalanswer > 0);
         }
 
         public bool Analyze(clFilter Target, bool bShow, Label lblPhasor)
         {
-            return (Analyze(Target,bShow,Color.Cyan, lblPhasor));
-        }
-
-        public bool Analyze(clFilter Target, bool bShow)
-        {
-            return (Analyze(Target, bShow, Color.Cyan, null));
+            return (Analyze(Target,bShow,true, lblPhasor));
         }
 
         public clPhoton(AnalyzeMethod analyzeMethod)
@@ -250,19 +257,19 @@ namespace EprGrapics
             get { return dFilterAxis*180.0/Math.PI; }
             set { dFilterAxis = EprMath.Limit180(value*Math.PI/180.0); }
         }
-        public void ShowMapping(List<clPhasor> mappedPhasors, Color PenColor, Label lblPhasor, AnalyzeMethod method)
+        public void ShowMapping(List<clPhasor> mappedPhasors, bool ShowAll, Label lblPhasor, AnalyzeMethod method)
         {
             int nCentreX, nCentreY, nRadius, nX, nY;
-            Pen MyPenB = new Pen(PenColor, 2);
-            if (MyPicture == null)
-                return;
+            Pen MyPenB = new Pen(Color.LightCyan, 2);
+            if ((MyPicture == null) || (mappedPhasors.Count() < 1))
+                    return;
             System.Drawing.Bitmap MyBitmap = new Bitmap(MyPicture.Image);
             System.Drawing.Graphics MyGraphics = System.Drawing.Graphics.FromImage(MyBitmap);
             nCentreX = MyPicture.ClientSize.Width / 2;
             nCentreY = MyPicture.ClientSize.Height / 2;
             Point PtCentre = new Point(nCentreX, nCentreY);
             nRadius = Math.Min(nCentreY, nCentreX) - 3;
-            Point PtEnd; ;
+            Point PtEnd;
             foreach (clPhasor ph in mappedPhasors)
             {
                 nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 + ph.PhasorResult)));
@@ -270,6 +277,16 @@ namespace EprGrapics
                 PtEnd = new Point(nCentreX + nX, nCentreY - nY);
                 MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             }
+            if (!ShowAll) 
+                return;
+            nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 + mappedPhasors[0].AxisResult)));
+            nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 + mappedPhasors[0].AxisResult)));
+            PtEnd = new Point(nCentreX + nX, nCentreY - nY);
+            if ((mappedPhasors[0].AxisResult > -EprMath.halfPI) && (mappedPhasors[0].AxisResult <= EprMath.halfPI))
+                MyPenB.Color = Color.GreenYellow;
+            else
+                MyPenB.Color = Color.Orange;
+            MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             if (method == AnalyzeMethod.Rotation)
             {
                 if (lblPhasor != null)
