@@ -55,7 +55,7 @@ namespace EprGrapics
             return result;
         }
 
-        public static double ExtendedSin(double theta)
+        public static double ExtendedSine(double theta)
         {
             double fractionPart, thetaNormalised, result;
             long integerPart;

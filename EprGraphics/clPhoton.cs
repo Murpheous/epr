@@ -39,12 +39,15 @@ namespace EprGrapics
             get { return _phaseFloor; }
         }
 
-        public bool PhaseSense
+        public bool IsClockwise
         {
             get { return _isClockwise; }
             set { _isClockwise = value; }
         }
-
+        public int PhaseSense
+        {
+            get { return _isClockwise ? 1 : -1; }
+        }
         public double Phase
         {
             get {return _phase;}
@@ -105,8 +108,8 @@ namespace EprGrapics
             _phaseCieling = phaseRange + thetaOffset;
             _phaseFloor = -phaseRange + thetaOffset;
             _axisResult = EprMath.ExtendedAsin(thetaOffset / EprMath.halfPI);
-            double phaseMin = EprMath.ExtendedSin(_phaseFloor);
-            double phaseMax = EprMath.ExtendedSin(_phaseCieling);
+            double phaseMin = EprMath.ExtendedSine(_phaseFloor);
+            double phaseMax = EprMath.ExtendedSine(_phaseCieling);
             double phaseDelta = phaseMax - phaseMin; // We scale phase +- 180 to 
             double phaseMappedDown = ((Phase + Math.PI) / EprMath.twoPI);
             phaseMappedDown = (phaseMappedDown * phaseDelta) + phaseMin;
@@ -126,8 +129,11 @@ namespace EprGrapics
            double incidentAxis = EprMath.Limit90(Axis);
            double thetaOffset = EprMath.Limit90(incidentAxis - analyzerAxis);
            bool axisFlipped = ((thetaOffset < -EprMath.quarterPI) || (thetaOffset >= EprMath.quarterPI));
-           if (axisFlipped)
-               _axisResult = axisFlipped ? Math.PI : 0;
+           _axisResult = axisFlipped ? Math.PI : 0;
+           double phaseDelta = (EprMath.ExtendedSineSq(thetaOffset))*EprMath.halfPI;
+           double effectivePhase = EprMath.Limit180(thetaOffset + _phase);
+            _phasorResult = EprMath.Limit180(EprMath.ExtendedAsin(effectivePhase/EprMath.halfPI));
+            bResult = ((_phasorResult <= EprMath.halfPI) && (_phasorResult > -EprMath.halfPI));
            return bResult;
         }
 
@@ -150,9 +156,9 @@ namespace EprGrapics
              return false;
         }
 
-        public clPhasor(double srcAxis, double srcAzimuth, bool PhaseSense, double srcPhase)
+        public clPhasor(double srcAxis, double srcAzimuth, bool IsClockwise, double srcPhase)
         {
-            _isClockwise = PhaseSense;
+            _isClockwise = IsClockwise;
             Phase = srcPhase;
             Axis = srcAxis;
             sourceAzimuth = srcAzimuth;
@@ -193,7 +199,7 @@ namespace EprGrapics
                 if (sourceAzimuth == 0.0)
                 {
                     Phasors.Add(new clPhasor(axis, EprMath.halfPI, sourceSense, sourcePhase));
-                    Phasors.Add(new clPhasor(axis, -EprMath.halfPI, sourceSense, sourcePhase));
+                    Phasors.Add(new clPhasor(axis, -EprMath.halfPI, sourceSense, -sourcePhase));
                 }
             }
         }
@@ -341,10 +347,10 @@ namespace EprGrapics
             nCentreY = MyPicture.ClientSize.Height / 2;
             Point PtCentre = new Point(nCentreX,nCentreY);
             nRadius = Math.Min(nCentreY, nCentreX) - 3;
-            for (thetaDeg = -180; thetaDeg <= 179.999; thetaDeg += 5.625)
+            for (thetaDeg = -90; thetaDeg <= 89.999; thetaDeg += 2.8125)
             {
-                fracTheta = (thetaDeg /90);
-                mappedThetaRad =EprGrapics.EprMath.ExtendedAsin(fracTheta);
+                fracTheta =EprMath.ExtendedSineSq(thetaDeg*Math.PI/180.0);
+                mappedThetaRad = fracTheta * Math.PI;
                 nX = (int)(Math.Round(nRadius * Math.Sin(mappedThetaRad + 2.0 * dFilterAxis)));
                 nY = (int)(Math.Round(nRadius * Math.Cos(mappedThetaRad + 2.0 * dFilterAxis)));
                 double mappedThetaDeg = mappedThetaRad * 180 / Math.PI;
