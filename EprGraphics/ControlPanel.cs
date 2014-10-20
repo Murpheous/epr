@@ -101,7 +101,7 @@ namespace EprGrapics
             double azimuth = srcAzDeg * (Math.PI / 180.0);
              // Now do a phasor visualisation on two analyzers
             PhotonA.MakeElliptical(PhotonAxis, azimuth, phi, true);
-            PhotonB.MakeElliptical(PhotonAxis, azimuth, phi, true);
+            PhotonB.MakeElliptical(PhotonAxis, azimuth, phi, false);
             Analyzer_A.ShowDial();
             bool nResultA = PhotonA.Analyze(Analyzer_A,true, lblPhasor1Theta);
             Analyzer_B.ShowDial();
@@ -115,7 +115,7 @@ namespace EprGrapics
             {
                 double testAxis = i * Math.PI / 1800.0;
                 PhotonA.MakeElliptical(testAxis, EprMath.halfPI, EprMath.halfPI, true);
-                PhotonB.MakeElliptical(testAxis, EprMath.halfPI, EprMath.halfPI + Math.PI, true);
+                PhotonB.MakeElliptical(testAxis, EprMath.halfPI, EprMath.halfPI, false);
                 if (PhotonA.Analyze(Analyzer_A, false,null) == PhotonB.Analyze(Analyzer_B, false,null))
                     concurCount++;
                 else
@@ -213,7 +213,7 @@ namespace EprGrapics
                     //for (int nPhotonPhase = 0; nPhotonPhase < 360; nPhotonPhase++)
                     //	double dPhotonPhase = (double)nPhotonPhase/ 1.0;
                     MyPhotonAlice.MakeElliptical(dPhotonAngle * (Math.PI / 180.0),EprMath.halfPI, EprMath.halfPI, true);
-                    MyPhotonBob.MakeElliptical(dPhotonAngle * (Math.PI / 180.0),EprMath.halfPI, -EprMath.halfPI, false);
+                    MyPhotonBob.MakeElliptical(dPhotonAngle * (Math.PI / 180.0),EprMath.halfPI, EprMath.halfPI, false);
                     bResultAlice = (MyPhotonAlice.Analyze(Analyzer_A, false,false,null));
                     bResultBob = (MyPhotonBob.Analyze(Analyzer_B, false, false, null));
                     if (bResultAlice == bResultBob)

@@ -50,7 +50,7 @@ namespace EprGrapics
         }
         public double Phase
         {
-            get {return _phase;}
+            get {return  _phase;}
             set { _phase = EprMath.Limit180(value); }
         }
 
@@ -98,16 +98,16 @@ namespace EprGrapics
             // Check the difference is less than 90 degrees, if so, tweak to keep in +- 90
             double analyzerAxis = EprMath.Limit90(analyzer.Axis);
             double incidentAxis = EprMath.Limit90(Axis);
-            double thetaOffset = 2.0 * (incidentAxis - analyzerAxis);
+            double axisDelta = 2.0 * (incidentAxis - analyzerAxis);
 
 
             // ************** From here we deal with the analyzer map
             // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
             double phaseRange = EprMath.halfPI + EprMath.halfPI * (1 - Math.Pow(Math.Cos(sourceAzimuth), 2.0));
             // Phase zero and +-180 maps to centre, +- 90 to upper lower 
-            _phaseCieling = phaseRange + thetaOffset;
-            _phaseFloor = -phaseRange + thetaOffset;
-            _axisResult = EprMath.ExtendedAsin(thetaOffset / EprMath.halfPI);
+            _phaseCieling = phaseRange + axisDelta;
+            _phaseFloor = -phaseRange + axisDelta;
+            _axisResult = EprMath.ExtendedAsin(axisDelta / EprMath.halfPI);
             double phaseMin = EprMath.ExtendedSine(_phaseFloor);
             double phaseMax = EprMath.ExtendedSine(_phaseCieling);
             double phaseDelta = phaseMax - phaseMin; // We scale phase +- 180 to 
@@ -127,12 +127,16 @@ namespace EprGrapics
            // Check the difference is less than 90 degrees, if so, tweak to keep in +- 90
            double analyzerAxis = EprMath.Limit90(analyzer.Axis);
            double incidentAxis = EprMath.Limit90(Axis);
-           double thetaOffset = EprMath.Limit90(incidentAxis - analyzerAxis);
-           bool axisFlipped = ((thetaOffset < -EprMath.quarterPI) || (thetaOffset >= EprMath.quarterPI));
+           double axisDelta = EprMath.Limit90(incidentAxis - analyzerAxis);
+           bool axisFlipped = ((axisDelta < -EprMath.quarterPI) || (axisDelta >= EprMath.quarterPI));
+            // Generate new 'axis' vector aligned either with Analyzer A or B axis, depending on whether one or other is closest
            _axisResult = axisFlipped ? Math.PI : 0;
-           double phaseDelta = (EprMath.ExtendedSineSq(thetaOffset))*EprMath.halfPI;
-           double effectivePhase = EprMath.Limit180(thetaOffset + _phase);
-            _phasorResult = EprMath.Limit180(EprMath.ExtendedAsin(effectivePhase/EprMath.halfPI));
+           double axisDeltaDeg = axisDelta * 180 / Math.PI; // For debug
+           // Calculate axisDelta as a fraction of 90
+           double shiftSinSq = EprMath.ExtendedSineSq(axisDelta)*Math.PI;
+           double phaseDelta = (shiftSinSq - shiftSinSq * PhaseSense)/2.0;
+           double effectivePhase = Phase*PhaseSense + phaseDelta/2.0;
+           _phasorResult = EprMath.Limit180(EprMath.ExtendedSineSq(effectivePhase) * Math.PI);
             bResult = ((_phasorResult <= EprMath.halfPI) && (_phasorResult > -EprMath.halfPI));
            return bResult;
         }
@@ -199,7 +203,11 @@ namespace EprGrapics
                 if (sourceAzimuth == 0.0)
                 {
                     Phasors.Add(new clPhasor(axis, EprMath.halfPI, sourceSense, sourcePhase));
-                    Phasors.Add(new clPhasor(axis, -EprMath.halfPI, sourceSense, -sourcePhase));
+                    Phasors.Add(new clPhasor(axis, -EprMath.halfPI, !sourceSense, sourcePhase));
+                }
+                if (Math.Abs(sourceAzimuth) == EprMath.halfPI)
+                {
+                    Phasors.Add(new clPhasor(axis, EprMath.halfPI, sourceSense, sourcePhase));
                 }
             }
         }
