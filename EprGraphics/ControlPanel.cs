@@ -111,6 +111,7 @@ namespace EprGrapics
             this.ResumeLayout();
             int concurCount = 0;
             int dissentCount = 0;
+            
             for (int i = 0; i < 3600; i++)
             {
                 double testAxis = i * Math.PI / 1800.0;
@@ -122,6 +123,7 @@ namespace EprGrapics
                     dissentCount++;
             }
             LblEprCorrelation.Text = string.Format("{0:F1}%", ((double)concurCount / 36.0));
+            
         }
 
         private void btnMalus_Click(object sender, EventArgs e)
@@ -150,7 +152,8 @@ namespace EprGrapics
                 {
                     double dPhi = (double)nPhiSteps / 10.0;
                     //MyPhoton.MakeLinear(0, dPhi * (Math.PI / 180.0));
-                    MyPhoton.MakeElliptical(0,_photonAzimuthDeg*(Math.PI/180),dPhi * (Math.PI / 180),true);  
+                    MyPhoton.MakeLinear(0.0, dPhi);
+                    //MyPhoton.MakeElliptical(0,_photonAzimuthDeg*(Math.PI/180),dPhi * (Math.PI / 180),true);  
                     if (MyPhoton.Analyze(Analyzer_A, false,false,null))
                         nYes++;
                     else
@@ -208,12 +211,12 @@ namespace EprGrapics
                 //bool bShow = ((nAxisSteps % 100) == 0);
                 for (int nPhotonAngle = 0; nPhotonAngle < 3600; nPhotonAngle++)
                 {
-                    double dPhotonAngle = (double)nPhotonAngle / 10.0;
+                    double dPhotonAngle = ((double)nPhotonAngle)*Math.PI/ 1800.0;
                     //bool bShowPhasor = (bShow && ((nPhotonAngle % 10) == 0));
                     //for (int nPhotonPhase = 0; nPhotonPhase < 360; nPhotonPhase++)
                     //	double dPhotonPhase = (double)nPhotonPhase/ 1.0;
-                    MyPhotonAlice.MakeElliptical(dPhotonAngle * (Math.PI / 180.0),EprMath.halfPI, EprMath.halfPI, true);
-                    MyPhotonBob.MakeElliptical(dPhotonAngle * (Math.PI / 180.0),EprMath.halfPI, EprMath.halfPI, false);
+                    MyPhotonAlice.MakeElliptical(dPhotonAngle,EprMath.halfPI, EprMath.quarterPI, true);
+                    MyPhotonBob.MakeElliptical(dPhotonAngle,EprMath.halfPI, EprMath.quarterPI, false);
                     bResultAlice = (MyPhotonAlice.Analyze(Analyzer_A, false,false,null));
                     bResultBob = (MyPhotonBob.Analyze(Analyzer_B, false, false, null));
                     if (bResultAlice == bResultBob)

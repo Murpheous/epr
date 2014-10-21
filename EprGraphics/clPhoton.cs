@@ -8,6 +8,7 @@ using System.Windows.Forms;
 namespace EprGrapics
 {
     enum AnalyzeMethod { Rotation = 0, Phasors = 1 };
+    enum AnalyzeChannel { Alice = 0, Bob = 1};
 
     class clPhasor
     {
@@ -21,10 +22,16 @@ namespace EprGrapics
         double _axisResult;
         double _phaseCieling;
         double _phaseFloor;
+        int    _axisFlip;
 
         public double PhasorResult
         {
         	get {return _phasorResult;}
+        }
+
+        public AnalyzeChannel ReferenceChannel
+        {
+            get { return (_axisFlip % 2 == 0) ? AnalyzeChannel.Alice : AnalyzeChannel.Bob; }
         }
         public double PhaseCieling
         {
@@ -128,17 +135,23 @@ namespace EprGrapics
            double analyzerAxis = EprMath.Limit90(analyzer.Axis);
            double incidentAxis = EprMath.Limit90(Axis);
            double axisDelta = EprMath.Limit90(incidentAxis - analyzerAxis);
-           bool axisFlipped = ((axisDelta < -EprMath.quarterPI) || (axisDelta >= EprMath.quarterPI));
-            // Generate new 'axis' vector aligned either with Analyzer A or B axis, depending on whether one or other is closest
-           _axisResult = axisFlipped ? Math.PI : 0;
+           _axisFlip = 0;
+           if (axisDelta < -EprMath.quarterPI)
+               _axisFlip = 1;
+           else if (axisDelta >= EprMath.quarterPI)
+               _axisFlip = -1;
+           axisDelta += EprMath.halfPI * _axisFlip;
+           // Generate new 'axis' vector aligned either with Analyzer A or B axis, depending on whether one or other is closest
+          
+            _axisResult = _axisFlip * Math.PI;
            double axisDeltaDeg = axisDelta * 180 / Math.PI; // For debug
            // Calculate axisDelta as a fraction of 90
            double shiftSinSq = EprMath.ExtendedSineSq(axisDelta)*Math.PI;
            double phaseDelta = (shiftSinSq - shiftSinSq * PhaseSense)/2.0;
            double effectivePhase = Phase*PhaseSense + phaseDelta/2.0;
-           _phasorResult = EprMath.Limit180(EprMath.ExtendedSineSq(effectivePhase) * Math.PI);
+           _phasorResult = EprMath.Limit180(_axisResult + EprMath.ExtendedSineSq(effectivePhase) * Math.PI);
             bResult = ((_phasorResult <= EprMath.halfPI) && (_phasorResult > -EprMath.halfPI));
-           return bResult;
+            return bResult;
         }
 
         public bool Analyze( clFilter analyzer, AnalyzeMethod method)
@@ -228,18 +241,25 @@ namespace EprGrapics
         public bool Analyze(clFilter Target, bool bShow, bool ShowLimits, Label lblPhasor)
         {
             List <int> answers = new List<int>(Phasors.Count());
+            AnalyzeChannel refChannel = AnalyzeChannel.Alice;
             foreach (clPhasor phasor in Phasors)
             { 
                 answers.Add(phasor.Analyze(Target, Method) ? 1 : -1);
+                refChannel = phasor.ReferenceChannel;
             }
             int finalanswer = 1;
             foreach (int n in answers)
+            {
                 finalanswer *= n;
+            }
             if (bShow && Target.GotPicture())
             {
                 Target.ShowMapping(Phasors, ShowLimits, lblPhasor, Method);
             }
-             return (finalanswer > 0);
+            bool isAlice = (finalanswer > 0);
+            if (refChannel != AnalyzeChannel.Alice)
+                isAlice = !isAlice;
+            return isAlice;
         }
 
         public bool Analyze(clFilter Target, bool bShow, Label lblPhasor)
