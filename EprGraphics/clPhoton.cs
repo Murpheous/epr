@@ -9,7 +9,7 @@ namespace EprGrapics
 {
     enum AnalyzeMethod { Rotation = 0, Phasors = 1 };
     enum AnalyzeChannel { Alice = 0, Bob = 1};
-
+    
     class clPhasor
     {
  
@@ -183,10 +183,49 @@ namespace EprGrapics
 
      }
 
+
+    /* clPhoton: Photon object as a rotating vector
+     * Choose Y axis as 'UP', Z axis as 'LEFT', and X axis along velocity vector (into analyzer).
+     * This is simply chosen consistent with the local coordinates in the game engine analyzer prefab I built, and  Physicists beware!!!!, 
+     *  >>>>Unity3d has a left-handed coordinate system. Get over it, as I did<<<
+     *  
+     * Viewning the photon as a twirling baton rotating end-for end. The baton 0 phase is directed in the Y (Up) direction and rotates about the Spin Axis (the photon's local Z axis)
+     * A linearly polarized photon has the spin axis in the Y-Z plane of the analyzer. 
+     * At 0/180 degrees polarization the photon's spin (Z) axis is along the analyzer's Z axis, and at +/- 90 degrees
+     * it is along the analyzer's Y Axis. 
+     * The photon Phase is the rotation angle about the the photon's Z axis.
+     * For a linear polarization, the the tip of the photon's Y vector is through the +-x direction. A bit like a knife thrown by a circus performer.
+     * A circular polarization is one where the photon Y vector is rotating in a circle in the analyer's Y-Z plane, the spin axis is along the +- X direction.
+     * To calculate a linear photon's state wrt a target, rotate the Z axis about the X axis by the polarization angle 
+    */
+
     class clPhoton
     {
-        List<clPhasor> Phasors = new List<clPhasor>(); 
-               
+        // Directions used in game engine where analyzer through axis is along X direction, with Y up and Z right.
+        static Vector3 upAxis = new Vector3(0, 1, 0);
+        static Vector3 sideAxis = new Vector3(0, 0, 1);
+        static Vector3 throughAxis = new Vector3(1, 0, 0);
+
+        // Phasors are used when projecting a photon on to a linear analyzer. A linear polarization looks like two contra-rotating circular phasors.
+        // Idea is to take an incident photon and project it as a superposition of two circular phosors in the analyzer state-space
+        List<clPhasor> Phasors = new List<clPhasor>();
+        /* Three properties define the photon. The Elevation and Azimuth of the Spin Axis, then the phase about the  spin Axis.
+         * One is a vector orientation of the spin axis, the other is the phase, which is defined as the rotation of the Photon's UP vector about its Spin Axis.
+         * To get the spin axis, first rotate around X by the polarizer angle, then rotate around Y by the Azimuth.
+         */
+        double spinElevation;
+        double spinAzimuth;
+        double spinPhase;
+        /*
+                   // Choose Y axis as up, Z axis as Left, and X axis is into analyzer.
+            Vector3 spinAxisVector = new Vector3(upAxis);
+            // Start by setting the 'spin axis' in space
+            spinAxisVector.RotateAroundThrough(spinAxis);
+            // Now set the photon Axis relative to the Analyzer by rotataing back in the opposite direction to the Analyzer axis in space.
+            spinAxisVector.RotateAroundThrough(-MyAnalyzer.Axis);
+        */
+        // This is a flag that allows different analyzer methods to be compared.
+
         AnalyzeMethod _method = AnalyzeMethod.Rotation;
 
         public AnalyzeMethod Method
@@ -321,10 +360,10 @@ namespace EprGrapics
             else
                 MyPenB.Color = Color.Orange;
             MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
+            if (lblPhasor != null)
+                lblPhasor.Text = string.Format("{0:F2}°", (mappedPhasors[0].PhasorResult * 180) / Math.PI);
             if (method == AnalyzeMethod.Rotation)
             {
-                if (lblPhasor != null)
-                    lblPhasor.Text = string.Format("{0:F2}°", (mappedPhasors[0].PhasorResult * 180) / Math.PI);
                 MyPenB.Color = Color.BlueViolet;
                 nX = (int)(Math.Round(nRadius * Math.Sin(dFilterAxis * 2.0 + mappedPhasors[0].PhaseFloor)));
                 nY = (int)(Math.Round(nRadius * Math.Cos(dFilterAxis * 2.0 + mappedPhasors[0].PhaseFloor)));
