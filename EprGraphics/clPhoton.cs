@@ -63,7 +63,7 @@ namespace EprGrapics
 
         public double Inclination
         {
-            get { return _inclination }
+            get { return _inclination; }
             set { _inclination = EprMath.Limit180(value);}
         }
         public double sourceAxisDeg
@@ -248,7 +248,7 @@ namespace EprGrapics
 
         public void MakeElliptical(double inclination, double sourceAzimuth, double sourcePhase, bool sourceSense)
         {
-            _spinAzimuth = EprMath.Limit90(sourceAzimuth;
+            _spinAzimuth = EprMath.Limit90(sourceAzimuth);
             _spinPhase = EprMath.Limit180(sourcePhase);
             if (Method == AnalyzeMethod.Rotation)
             { 
