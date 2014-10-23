@@ -71,7 +71,7 @@ namespace EprGrapics
             get { return _inclination*180.0/Math.PI; }
         }
 
-        public double sourceAzimuth
+        public double spinAxisAzimuth
         {
             get { return _azimuth; }
             set { _azimuth = EprMath.Limit90(value); }
@@ -110,7 +110,7 @@ namespace EprGrapics
 
             // ************** From here we deal with the analyzer map
             // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
-            double phaseRange = EprMath.halfPI + EprMath.halfPI * (1 - Math.Pow(Math.Cos(sourceAzimuth), 2.0));
+            double phaseRange = EprMath.halfPI + EprMath.halfPI * (1 - Math.Pow(Math.Cos(spinAxisAzimuth), 2.0));
             // Phase zero and +-180 maps to centre, +- 90 to upper lower 
             _phaseCieling = phaseRange + axisDelta;
             _phaseFloor = -phaseRange + axisDelta;
@@ -178,7 +178,7 @@ namespace EprGrapics
             _isClockwise = IsClockwise;
             Phase = srcPhase;
             Inclination = srcAxis;
-            sourceAzimuth = srcAzimuth;
+            spinAxisAzimuth = srcAzimuth;
         }
 
      }
@@ -206,9 +206,6 @@ namespace EprGrapics
         static Vector3 sideAxis = new Vector3(0, 0, 1);
         static Vector3 throughAxis = new Vector3(1, 0, 0);
 
-        // Phasors are used when projecting a photon on to a linear analyzer. A linear polarization looks like two contra-rotating circular phasors.
-        // Idea is to take an incident photon and project it as a superposition of two circular phosors in the analyzer state-space
-        List<clPhasor> Phasors = new List<clPhasor>();
         /*
                    // Choose Y axis as up, Z axis as Left, and X axis is into analyzer.
         /* Three properties define the photon in space wrt lab up = y and direction of travel = x.  
@@ -216,24 +213,29 @@ namespace EprGrapics
          * (ii) Azimuth of the Spin Inclination around Lab Up (y), 
          * (iii) the phase about the  spin Inclination.
          * the phase is the rotation of Photon's UP vector around the photon's Spin Inclination.
-         * To get the spin axis (0 or 180 Azimuth), first rotate around X by the inclination angle, then rotate around photon Z by the phase.
+         * To get the spin axis (0 or 180 Azimuth), first rotate around X by the spinAxisInclination angle, then rotate around photon Z by the phase.
          */
         AnalyzeMethod _method = AnalyzeMethod.Rotation;
-        double _spinInclination;
-        double _spinAzimuth;
+        double _spinAxisInclination;
+        double _spinAxisAzimuth;
         double _spinPhase;
+        bool _phaseSense;
         Vector3 _spinAxisVector;
 
         private void setSpinVector()
         {
             _spinAxisVector = new Vector3(upAxis);
             // Start by setting the 'spin axis' in space
-            _spinAxisVector.RotateAroundUp(_spinAzimuth);
-            _spinAxisVector.RotateAroundThrough(_spinInclination);
-            _spinAxisVector.RotateAroundZ(_spinPhase);
-        }        // This is a flag that allows different analyzer methods to be compared.
+            _spinAxisVector.RotateAroundUp(_spinAxisAzimuth);
+            _spinAxisVector.RotateAroundThrough(_spinAxisInclination);
+            if (_phaseSense)
+                _spinAxisVector.RotateAroundZ(_spinPhase);
+            else
+                _spinAxisVector.RotateAroundZ(-_spinPhase);
+        }        
 
 
+        // This is a flag that allows different analyzer methods to be compared.
         public AnalyzeMethod Method
         {
             set
@@ -246,47 +248,52 @@ namespace EprGrapics
             get { return _method; }
         }
 
-        public void MakeElliptical(double inclination, double sourceAzimuth, double sourcePhase, bool sourceSense)
+        public void MakeElliptical(double spinAxisInclination, double spinAxisAzimuth, double spinPhase, bool phaseSense)
         {
-            _spinAzimuth = EprMath.Limit90(sourceAzimuth);
-            _spinPhase = EprMath.Limit180(sourcePhase);
-            if (Method == AnalyzeMethod.Rotation)
-            { 
-                if (Phasors.Count() > 0)
-                    Phasors.Clear();
-                Phasors.Add(new clPhasor(inclination, sourceAzimuth, sourceSense, sourcePhase));
-            }
-            else if (Method == AnalyzeMethod.Phasors)
-            {
-                if (Phasors.Count() > 0)
-                    Phasors.Clear();
-                if (sourceAzimuth == 0.0)
-                {
-                    Phasors.Add(new clPhasor(inclination, EprMath.halfPI, sourceSense, sourcePhase));
-                    Phasors.Add(new clPhasor(inclination, -EprMath.halfPI, !sourceSense, sourcePhase));
-                }
-                if (Math.Abs(sourceAzimuth) == EprMath.halfPI)
-                {
-                    Phasors.Add(new clPhasor(inclination, EprMath.halfPI, sourceSense, sourcePhase));
-                }
-            }
+            _spinAxisAzimuth = EprMath.Limit90(spinAxisAzimuth);
+            _spinPhase = EprMath.Limit180(spinPhase);
+            _spinAxisInclination = EprMath.Limit90(spinAxisInclination);
+            _phaseSense = phaseSense;
+            setSpinVector();
         }
-        public void MakeLinear(double inclination, double sourcePhase)
+
+        public void MakeLinear(double spinAxisInclination, double spinPhase)
         {
-            MakeElliptical(inclination, 0.0, sourcePhase, true);
+            MakeElliptical(spinAxisInclination, 0.0, spinPhase, true);
         }
-        public void MakeLinear(double inclination, bool isClockwise, double sourcePhase)
+
+        public void MakeLinear(double spinAxisInclination, bool isClockwise, double spinPhase)
         {
-            MakeElliptical(inclination, 0.0, sourcePhase, isClockwise);
+            MakeElliptical(spinAxisInclination, 0.0, spinPhase, isClockwise);
         }
-        public void MakeCircular(double inclination, bool isClockwise, double sourcePhase)
+ 
+        public void MakeCircular(double spinAxisInclination, bool isClockwise, double spinPhase)
         {
            int tmpSign = (isClockwise ? 1 : -1);
-           MakeElliptical(inclination, EprMath.halfPI * tmpSign, sourcePhase, isClockwise);
+           MakeElliptical(spinAxisInclination, EprMath.halfPI * tmpSign, spinPhase, isClockwise);
         }
 
         public bool Analyze(clFilter Target, bool bShow, bool ShowLimits, Label lblPhasor)
         {
+            // Phasors are used when projecting a photon on to a linear analyzer. A linear polarization looks like two contra-rotating circular phasors.
+            // Idea is to take an incident photon and project it as a superposition of two circular phosors in the analyzer state-space
+            List<clPhasor> Phasors = new List<clPhasor>();
+            if (Method == AnalyzeMethod.Rotation)
+            {
+                Phasors.Add(new clPhasor(_spinAxisInclination, _spinAxisAzimuth, _phaseSense, _spinPhase));
+            }
+            else if (Method == AnalyzeMethod.Phasors)
+            {
+                if (_spinAxisAzimuth == 0.0)
+                {
+                    Phasors.Add(new clPhasor(_spinAxisInclination, EprMath.halfPI, _phaseSense, _spinPhase));
+                    Phasors.Add(new clPhasor(_spinAxisInclination, -EprMath.halfPI, !_phaseSense, _spinPhase));
+                }
+                if (Math.Abs(_spinAxisAzimuth) == EprMath.halfPI)
+                {
+                    Phasors.Add(new clPhasor(_spinAxisInclination, EprMath.halfPI, _phaseSense, _spinPhase));
+                }
+            }
             List <int> answers = new List<int>(Phasors.Count());
             AnalyzeChannel refChannel = AnalyzeChannel.Alice;
             foreach (clPhasor phasor in Phasors)
