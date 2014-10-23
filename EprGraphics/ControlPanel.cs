@@ -16,7 +16,7 @@ namespace EprGrapics
         double sourcePhaseDeg;
         clFilter Analyzer_A;
         clFilter Analyzer_B;
-        AnalyzeMethod analyzeMethod = AnalyzeMethod.Rotation;
+        AnalyzeMethod analyzeMethod = AnalyzeMethod.Orientation;
 
         public double PhotonAxisDeg
         {
@@ -43,7 +43,7 @@ namespace EprGrapics
             lblPhotonAxis.Text = string.Format("{0:F2}°",PhotonAxisDeg);
             lblPhi.Text = string.Format("{0:F2}°", sourcePhaseDeg);
             lblSourceAzimuth.Text = string.Format("{0:F2}°", _photonAzimuthDeg);
-            rbRotation.Checked = (analyzeMethod == AnalyzeMethod.Rotation);
+            rbRotation.Checked = (analyzeMethod == AnalyzeMethod.Orientation);
             rbPhasors.Checked = (analyzeMethod == AnalyzeMethod.Phasors);
         }
 
@@ -253,7 +253,7 @@ namespace EprGrapics
             if (rbRotation.Checked)
             {
                 rbPhasors.Checked = false;
-                analyzeMethod = AnalyzeMethod.Rotation;
+                analyzeMethod = AnalyzeMethod.Orientation;
                 UpDatePhasorDisplay(sourcePhaseDeg, _photonAzimuthDeg);
             }
         }

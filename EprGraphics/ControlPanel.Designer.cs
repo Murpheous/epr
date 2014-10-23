@@ -431,10 +431,10 @@
             this.rbRotation.AutoSize = true;
             this.rbRotation.Location = new System.Drawing.Point(12, 19);
             this.rbRotation.Name = "rbRotation";
-            this.rbRotation.Size = new System.Drawing.Size(65, 17);
+            this.rbRotation.Size = new System.Drawing.Size(76, 17);
             this.rbRotation.TabIndex = 1;
             this.rbRotation.TabStop = true;
-            this.rbRotation.Text = "Rotation";
+            this.rbRotation.Text = "Orientation";
             this.rbRotation.UseVisualStyleBackColor = true;
             this.rbRotation.CheckedChanged += new System.EventHandler(this.rbRotation_CheckedChanged);
             // 
