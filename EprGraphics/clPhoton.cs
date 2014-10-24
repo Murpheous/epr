@@ -150,14 +150,19 @@ namespace EprGrapics
             {
                 _spinAxisVector.RotateAroundY(_spinAxisAzimuth);
                 through.RotateAroundY(_spinAxisAzimuth);
+                _spinAxisVector.RotateAroundAxis(through, _spinAxisInclination);
+                _phaseVector.RotateAroundAxis(through, _spinAxisInclination);
             }
-            _spinAxisVector.RotateAroundAxis(through,_spinAxisInclination);
-            _phaseVector.RotateAroundAxis(through, _spinAxisInclination);
+            else
+            {
+                _spinAxisVector.RotateAroundX( _spinAxisInclination);
+                _phaseVector.RotateAroundX(_spinAxisInclination);
+            }
             // Now finally rotate phase vector about spin Axis
             if (_phaseSense)
-                _spinAxisVector.RotateAroundAxis(_spinAxisVector,_spinPhase);
+                _phaseVector.RotateAroundAxis(_spinAxisVector,_spinPhase);
             else
-                _spinAxisVector.RotateAroundAxis(_spinAxisVector, _spinPhase);
+                _phaseVector.RotateAroundAxis(_spinAxisVector, _spinPhase);
         }        
 
 
@@ -234,16 +239,26 @@ namespace EprGrapics
             }
             else if (Method == AnalyzeMethod.Phasors)
             {
-                double phase = _phaseVector.SignedVectorAngle(worldThrough, _spinAxisVector);
-                if (_spinAxisAzimuth == 0.0)
+                double phaseAngle = 0;
+                double inclination = 0;
+                Vector3 analyzerAxis = new Vector3(worldUp);
+                analyzerAxis.RotateAroundX(analyzer.Inclination);
+                Vector3 phaseProjected = new Vector3(_spinAxisVector.CrossProduct(worldThrough));
+                if (phaseProjected.Magnitude == 0) 
+                { // Through vectoe and Spin Axis Same means Circular Polarization
+                    phaseAngle = 0;
+                    inclination = worldUp.SignedVectorAngle(_phaseVector, worldThrough);
+                }             
+                else
                 {
-                    Phasors.Add(new clPhasor(_spinAxisInclination, _phaseSense, _spinPhase));
-                    Phasors.Add(new clPhasor(_spinAxisInclination, !_phaseSense, _spinPhase));
+                    phaseProjected.Normalize();
+                    Vector3 perp = new Vector3(phaseProjected);
+                    perp.RotateAroundX(EprMath.halfPI);
+                    phaseAngle = _phaseVector.SignedVectorAngle(phaseProjected,perp);
+                    inclination = worldUp.SignedVectorAngle(phaseProjected, worldThrough);
                 }
-                if (Math.Abs(_spinAxisAzimuth) == EprMath.halfPI)
-                {
-                    Phasors.Add(new clPhasor(_spinAxisInclination, _phaseSense, _spinPhase));
-                }
+                Phasors.Add(new clPhasor(inclination, _phaseSense, phaseAngle));
+                Phasors.Add(new clPhasor(inclination, !_phaseSense, phaseAngle));
                 List<int> answers = new List<int>(Phasors.Count());
                 AnalyzeChannel refChannel = AnalyzeChannel.Alice;
                 foreach (clPhasor phasor in Phasors)
@@ -283,18 +298,18 @@ namespace EprGrapics
     }
     class clFilter
     {
-        double analyzerAxis;
+        double _analyzerAxis;
         System.Windows.Forms.PictureBox MyPicture;
 
         public double Inclination
         {
-            get { return analyzerAxis; }
-            set { analyzerAxis = EprMath.Limit180(value);}
+            get { return _analyzerAxis; }
+            set { _analyzerAxis = EprMath.Limit180(value);}
         }
         public double AxisDeg
         {
-            get { return analyzerAxis*180.0/Math.PI; }
-            set { analyzerAxis = EprMath.Limit180(value*Math.PI/180.0); }
+            get { return _analyzerAxis*180.0/Math.PI; }
+            set { _analyzerAxis = EprMath.Limit180(value*Math.PI/180.0); }
         }
 
         public void ShowMapping(double mappedTheta, double mappedAxis, double phaseFloor, double phaseCieling, Label lblPhasor)
@@ -308,12 +323,12 @@ namespace EprGrapics
             Point PtCentre = new Point(nCentreX, nCentreY);
             nRadius = Math.Min(nCentreY, nCentreX) - 3;
             Point PtEnd;
-            nX = (int)(Math.Round(nRadius * Math.Sin(analyzerAxis * 2.0 + mappedTheta)));
-            nY = (int)(Math.Round(nRadius * Math.Cos(analyzerAxis * 2.0 + mappedTheta)));
+            nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + mappedTheta)));
+            nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + mappedTheta)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
             MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
-            nX = (int)(Math.Round(nRadius * Math.Sin(analyzerAxis * 2.0 + mappedAxis)));
-            nY = (int)(Math.Round(nRadius * Math.Cos(analyzerAxis * 2.0 + mappedAxis)));
+            nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + mappedAxis)));
+            nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + mappedAxis)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
             if ((mappedAxis > -EprMath.halfPI) && (mappedAxis <= EprMath.halfPI))
                 MyPenB.Color = Color.GreenYellow;
@@ -323,13 +338,13 @@ namespace EprGrapics
             if (lblPhasor != null)
                 lblPhasor.Text = string.Format("{0:F2}°", (mappedTheta * 180) / Math.PI);
             MyPenB.Color = Color.BlueViolet;
-            nX = (int)(Math.Round(nRadius * Math.Sin(analyzerAxis * 2.0 + phaseFloor)));
-            nY = (int)(Math.Round(nRadius * Math.Cos(analyzerAxis * 2.0 + phaseFloor)));
+            nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + phaseFloor)));
+            nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + phaseFloor)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
             MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             MyPenB.Color = Color.Bisque;
-            nX = (int)(Math.Round(nRadius * Math.Sin(analyzerAxis * 2.0 + phaseCieling)));
-            nY = (int)(Math.Round(nRadius * Math.Cos(analyzerAxis * 2.0 + phaseCieling)));
+            nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + phaseCieling)));
+            nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + phaseCieling)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
             MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             MyPicture.Image = MyBitmap;
@@ -352,15 +367,15 @@ namespace EprGrapics
             Point PtEnd;
             foreach (clPhasor ph in mappedPhasors)
             {
-                nX = (int)(Math.Round(nRadius * Math.Sin(analyzerAxis * 2.0 + ph.PhasorResult)));
-                nY = (int)(Math.Round(nRadius * Math.Cos(analyzerAxis * 2.0 + ph.PhasorResult)));
+                nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + ph.PhasorResult)));
+                nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + ph.PhasorResult)));
                 PtEnd = new Point(nCentreX + nX, nCentreY - nY);
                 MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             }
             if (!ShowAll) 
                 return;
-            nX = (int)(Math.Round(nRadius * Math.Sin(analyzerAxis * 2.0 + mappedPhasors[0].AxisResult)));
-            nY = (int)(Math.Round(nRadius * Math.Cos(analyzerAxis * 2.0 + mappedPhasors[0].AxisResult)));
+            nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + mappedPhasors[0].AxisResult)));
+            nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + mappedPhasors[0].AxisResult)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
             if ((mappedPhasors[0].AxisResult > -EprMath.halfPI) && (mappedPhasors[0].AxisResult <= EprMath.halfPI))
                 MyPenB.Color = Color.GreenYellow;
@@ -412,8 +427,8 @@ namespace EprGrapics
             {
                 fracTheta =EprMath.ExtendedSineSq(thetaDeg*Math.PI/180.0);
                 mappedThetaRad = fracTheta * Math.PI;
-                nX = (int)(Math.Round(nRadius * Math.Sin(mappedThetaRad + 2.0 * analyzerAxis)));
-                nY = (int)(Math.Round(nRadius * Math.Cos(mappedThetaRad + 2.0 * analyzerAxis)));
+                nX = (int)(Math.Round(nRadius * Math.Sin(mappedThetaRad + 2.0 * _analyzerAxis)));
+                nY = (int)(Math.Round(nRadius * Math.Cos(mappedThetaRad + 2.0 * _analyzerAxis)));
                 double mappedThetaDeg = mappedThetaRad * 180 / Math.PI;
                 Point PtEnd = new Point(nCentreX + nX, nCentreY - nY);
                 if ((mappedThetaDeg < -90) || (mappedThetaDeg > 90))
@@ -431,11 +446,11 @@ namespace EprGrapics
         }
         public clFilter()
         {
-            analyzerAxis = 0;
+            _analyzerAxis = 0;
         }
         public clFilter(double ArgAxis)
         {
-            analyzerAxis = EprMath.Limit180(ArgAxis);
+            _analyzerAxis = EprMath.Limit180(ArgAxis);
         }
 
     }
