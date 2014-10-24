@@ -20,8 +20,6 @@ namespace EprGrapics
         
         double _phasorResult;
         double _axisResult;
-        double _phaseCieling;
-        double _phaseFloor;
         int    _axisFlip;
 
         public double PhasorResult
@@ -33,17 +31,9 @@ namespace EprGrapics
         {
             get { return (_axisFlip % 2 == 0) ? AnalyzeChannel.Alice : AnalyzeChannel.Bob; }
         }
-        public double PhaseCieling
-        {
-            get { return _phaseCieling; }
-        }
         public double AxisResult
         {
             get { return _axisResult; }
-        }
-        public double PhaseFloor
-        {
-            get { return _phaseFloor; }
         }
 
         public bool IsClockwise
@@ -71,25 +61,8 @@ namespace EprGrapics
             get { return _incidentAxis*180.0/Math.PI; }
         }
 
-        public double SignedVectorAngle(Vector3 referenceVector, Vector3 otherVector, Vector3 normalVector)
-        {
-            double dot = Vector3.DotProduct(referenceVector, otherVector);
-            if (dot > 1.0)
-                dot = 1.0;
-            if (dot < -1.0)
-                dot = -1.0;
-            double result = Math.Acos(dot);
-            if (result != 0.0)
-            {
-                Vector3 perpVector = Vector3.CrossProduct(normalVector, referenceVector);
-                if (Vector3.DotProduct(perpVector, otherVector) < 0.0)
-                    result = -result;
-            }
-            return result;
-        }
 
-
-        public bool AnalyzeCircular(clFilter analyzer)
+        public bool Analyze(clFilter analyzer)
         {
            bool bResult = true;
 
@@ -261,6 +234,7 @@ namespace EprGrapics
             }
             else if (Method == AnalyzeMethod.Phasors)
             {
+                double phase = _phaseVector.SignedVectorAngle(worldThrough, _spinAxisVector);
                 if (_spinAxisAzimuth == 0.0)
                 {
                     Phasors.Add(new clPhasor(_spinAxisInclination, _phaseSense, _spinPhase));
@@ -274,7 +248,7 @@ namespace EprGrapics
                 AnalyzeChannel refChannel = AnalyzeChannel.Alice;
                 foreach (clPhasor phasor in Phasors)
                 {
-                    answers.Add(phasor.AnalyzeCircular(analyzer) ? 1 : -1);
+                    answers.Add(phasor.Analyze(analyzer) ? 1 : -1);
                     refChannel = phasor.ReferenceChannel;
                 }
                 int finalanswer = 1;
