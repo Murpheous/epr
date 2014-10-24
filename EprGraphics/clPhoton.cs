@@ -137,32 +137,32 @@ namespace EprGrapics
         double _spinAxisAzimuth;
         double _spinPhase;
         bool _phaseSense;
+        // Spin Axis is the axis of rotation of the phase vector in the polarized beam
         Vector3 _spinAxisVector;
-        Vector3 _phaseVector;
+        Vector3 _phaseZeroVector; // phase zero vector is intersection between planes defined by normal to analyzer face (worldThrough), and the plane of spin (normal to spin axis) of the polarized beam.
+        Vector3 _phaseVector;         // phaseVector is the actual instantaneous phase of the particular photon
 
-        private void setSpinVector()
+        private void setSpinVectors()
         {
             Vector3 through = new Vector3(worldThrough);
             _spinAxisVector = new Vector3(worldCross);
-            _phaseVector = new Vector3(worldUp);
             // Start by setting the 'spin axis' azimuth in space
+            _phaseZeroVector = new Vector3(worldUp);  
             if (_spinAxisAzimuth != 0.0)
             {
                 _spinAxisVector.RotateAroundY(_spinAxisAzimuth);
                 through.RotateAroundY(_spinAxisAzimuth);
                 _spinAxisVector.RotateAroundAxis(through, _spinAxisInclination);
-                _phaseVector.RotateAroundAxis(through, _spinAxisInclination);
+                _phaseZeroVector = worldThrough.CrossProduct(_spinAxisVector);
             }
             else
             {
                 _spinAxisVector.RotateAroundX( _spinAxisInclination);
-                _phaseVector.RotateAroundX(_spinAxisInclination);
+                _phaseZeroVector = Vector3.RotateAroundX(worldUp,_spinAxisInclination);
             }
             // Now finally rotate phase vector about spin Axis
-            if (_phaseSense)
-                _phaseVector.RotateAroundAxis(_spinAxisVector,_spinPhase);
-            else
-                _phaseVector.RotateAroundAxis(_spinAxisVector, _spinPhase);
+            // Intersect between plane of photon rotation and analyzer face.
+            _phaseVector = Vector3.RotateAroundAxis(_phaseZeroVector,_spinAxisVector,(_phaseSense? _spinPhase :  -_spinPhase));
         }        
 
 
@@ -209,7 +209,7 @@ namespace EprGrapics
             // Idea is to take an incident photon and project it as a superposition of two circular phosors in the analyzer state-space
             bool isAlice = true;
             List<clPhasor> Phasors = new List<clPhasor>();
-            setSpinVector();
+            setSpinVectors();
             if (Method == AnalyzeMethod.Orientation)
             {
                 // Check the difference is less than 90 degrees, if so, tweak to keep in +- 90
@@ -241,24 +241,31 @@ namespace EprGrapics
             {
                 double phaseAngle = 0;
                 double inclination = 0;
-                Vector3 analyzerAxis = new Vector3(worldUp);
-                analyzerAxis.RotateAroundX(analyzer.Inclination);
-                Vector3 phaseProjected = new Vector3(_spinAxisVector.CrossProduct(worldThrough));
-                if (phaseProjected.Magnitude == 0) 
-                { // Through vectoe and Spin Axis Same means Circular Polarization
-                    phaseAngle = 0;
+                Vector3 phaseProjected = new Vector3();
+                double phaseDot = _phaseVector.DotProduct(worldThrough);
+                if (Math.Abs(phaseDot) >= 1.0)
+                {
+                    phaseAngle = phaseDot * _spinPhase;
                     inclination = worldUp.SignedVectorAngle(_phaseVector, worldThrough);
-                }             
+                }
                 else
                 {
-                    phaseProjected.Normalize();
+                    if (phaseDot == 0.0)
+                    {
+                        phaseProjected = _phaseVector;
+                    }
+                    else
+                    {
+                        phaseProjected = _phaseVector - phaseDot * worldThrough;
+                        phaseProjected.Normalize();
+                    }
                     Vector3 perp = new Vector3(phaseProjected);
                     perp.RotateAroundX(EprMath.halfPI);
-                    phaseAngle = _phaseVector.SignedVectorAngle(phaseProjected,perp);
+                    phaseAngle = _phaseVector.SignedVectorAngle(phaseProjected, perp);
                     inclination = worldUp.SignedVectorAngle(phaseProjected, worldThrough);
                 }
-                Phasors.Add(new clPhasor(inclination, _phaseSense, phaseAngle));
-                Phasors.Add(new clPhasor(inclination, !_phaseSense, phaseAngle));
+                Phasors.Add(new clPhasor(inclination, true, phaseAngle));
+                Phasors.Add(new clPhasor(inclination, false, phaseAngle));
                 List<int> answers = new List<int>(Phasors.Count());
                 AnalyzeChannel refChannel = AnalyzeChannel.Alice;
                 foreach (clPhasor phasor in Phasors)
