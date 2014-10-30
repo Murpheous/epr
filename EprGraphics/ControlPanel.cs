@@ -215,8 +215,8 @@ namespace EprGrapics
                     //bool bShowPhasor = (bShow && ((nPhotonAngle % 10) == 0));
                     //for (int nPhotonPhase = 0; nPhotonPhase < 360; nPhotonPhase++)
                     //	double dPhotonPhase = (double)nPhotonPhase/ 1.0;
-                    MyPhotonAlice.MakeElliptical(dPhotonAngle,EprMath.halfPI, 0, true);
-                    MyPhotonBob.MakeElliptical(dPhotonAngle,EprMath.halfPI, Math.PI, true);
+                    MyPhotonAlice.MakeElliptical(dPhotonAngle, EprMath.halfPI, EprMath.halfPI, true);
+                    MyPhotonBob.MakeElliptical(dPhotonAngle +EprMath.quarterPI ,  EprMath.halfPI, Math.PI, false);
                     bResultAlice = (MyPhotonAlice.Analyze(Analyzer_A, false,false,null));
                     bResultBob = (MyPhotonBob.Analyze(Analyzer_B, false, false, null));
                     if (bResultAlice == bResultBob)
