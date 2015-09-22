@@ -341,19 +341,19 @@ namespace EprGrapics
                 MyPenB.Color = Color.GreenYellow;
             else
                 MyPenB.Color = Color.Orange;
-            MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
+            //MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             if (lblPhasor != null)
                 lblPhasor.Text = string.Format("{0:F2}°", (mappedTheta * 180) / Math.PI);
             MyPenB.Color = Color.BlueViolet;
             nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + phaseFloor)));
             nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + phaseFloor)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
-            MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
+            //MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             MyPenB.Color = Color.Bisque;
             nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + phaseCieling)));
             nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + phaseCieling)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
-            MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
+            //MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             MyPicture.Image = MyBitmap;
             MyPicture.Refresh();
 
@@ -388,7 +388,7 @@ namespace EprGrapics
                 MyPenB.Color = Color.GreenYellow;
             else
                 MyPenB.Color = Color.Orange;
-            MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
+            //MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             if (lblPhasor != null)
                 lblPhasor.Text = string.Format("{0:F2}°", (mappedPhasors[0].PhasorResult * 180) / Math.PI);
             MyPicture.Image = MyBitmap;

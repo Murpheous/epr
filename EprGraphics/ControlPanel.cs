@@ -100,8 +100,10 @@ namespace EprGrapics
             double phi = srcPhaseDeg * (Math.PI / 180.0);
             double azimuth = srcAzDeg * (Math.PI / 180.0);
              // Now do a phasor visualisation on two analyzers
-            PhotonA.MakeElliptical(PhotonAxis, azimuth, phi, true);
-            PhotonB.MakeElliptical(PhotonAxis, azimuth, phi, false);
+            //PhotonA.MakeElliptical(PhotonAxis, azimuth, phi, true);
+            //PhotonB.MakeElliptical(PhotonAxis, azimuth, phi, false);
+            PhotonA.MakeLinear(PhotonAxis, phi);
+            PhotonB.MakeLinear(PhotonAxis, phi);
             Analyzer_A.ShowDial();
             bool nResultA = PhotonA.Analyze(Analyzer_A,true, lblPhasor1Theta);
             Analyzer_B.ShowDial();
