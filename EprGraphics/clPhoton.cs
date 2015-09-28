@@ -390,7 +390,7 @@ namespace EprGrapics
                 MyPenB.Color = Color.Orange;
             //MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             if (lblPhasor != null)
-                lblPhasor.Text = string.Format("{0:F2}°", (mappedPhasors[0].PhasorResult * 180) / Math.PI);
+                lblPhasor.Text = string.Format("{0:F2}°", (mappedPhasors[mappedPhasors.Count-1].PhasorResult * 180) / Math.PI);
             MyPicture.Image = MyBitmap;
             MyPicture.Refresh();
             
@@ -413,7 +413,7 @@ namespace EprGrapics
             double fracTheta, mappedThetaRad;
             int nCentreX, nCentreY, nRadius, nX, nY;
             Pen MyPenA = new Pen(Color.DarkSalmon,1);
-            Pen MyPenB = new Pen(Color.DarkSeaGreen, 1);
+            Pen MyPenB = new Pen(Color.DarkSlateBlue, 1);
             Pen MyPenC = new Pen(Color.Gray, 1);
 
             if (ArgPicture == null) 
