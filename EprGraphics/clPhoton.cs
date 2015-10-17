@@ -80,7 +80,6 @@ namespace EprGrapics
            // Generate new 'axis' vector aligned either with Analyzer A or B axis, depending on whether one or other is closest
           
             _axisResult = _axisFlip * Math.PI;
-           double axisDeltaDeg = axisDelta * 180 / Math.PI; // For debug
            // Calculate axisDelta as a fraction of 90
            double shiftSinSq = EprMath.ExtendedSineSq(axisDelta)*Math.PI;
            double phaseDelta = (shiftSinSq - shiftSinSq * PhaseSense)/2.0;
