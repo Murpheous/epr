@@ -84,8 +84,12 @@ namespace EprGrapics
            double shiftSinSq = EprMath.ExtendedSineSq(axisDelta)*Math.PI;
            double phaseDelta = (shiftSinSq - shiftSinSq * PhaseSense)/2.0;
            double effectivePhase = Phase*PhaseSense + phaseDelta/2.0;
-           _phasorResult = EprMath.Limit180(_axisResult + EprMath.ExtendedSineSq(effectivePhase) * Math.PI);
-            bResult = ((_phasorResult <= EprMath.halfPI) && (_phasorResult > -EprMath.halfPI));
+           double mappedResult = EprMath.ExtendedSineSq(effectivePhase);
+           _phasorResult = EprMath.Limit180(_axisResult +  mappedResult* Math.PI);
+           if ((_phasorResult <= EprMath.halfPI) && (_phasorResult > -EprMath.halfPI))
+               bResult = true;
+           else
+               bResult = false;
             return bResult;
         }
 
