@@ -58,9 +58,12 @@
             this.label9 = new System.Windows.Forms.Label();
             this.lblPhasor2Theta = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.rbRotation = new System.Windows.Forms.RadioButton();
             this.rbPhasors = new System.Windows.Forms.RadioButton();
+            this.rbRotation = new System.Windows.Forms.RadioButton();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.rbLinear = new System.Windows.Forms.RadioButton();
+            this.rbCircular = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarTheta)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackPhi1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackPhi2)).BeginInit();
@@ -70,6 +73,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.picBoxGraph)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbTwist)).BeginInit();
             this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // trackBarTheta
@@ -415,16 +419,17 @@
             this.label10.Text = "Result";
             this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // groupBox1
+            // rbPhasors
             // 
-            this.groupBox1.Controls.Add(this.rbRotation);
-            this.groupBox1.Controls.Add(this.rbPhasors);
-            this.groupBox1.Location = new System.Drawing.Point(23, 262);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(118, 75);
-            this.groupBox1.TabIndex = 39;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Analyzer Model";
+            this.rbPhasors.AutoSize = true;
+            this.rbPhasors.Location = new System.Drawing.Point(12, 42);
+            this.rbPhasors.Name = "rbPhasors";
+            this.rbPhasors.Size = new System.Drawing.Size(63, 17);
+            this.rbPhasors.TabIndex = 0;
+            this.rbPhasors.TabStop = true;
+            this.rbPhasors.Text = "Phasors";
+            this.rbPhasors.UseVisualStyleBackColor = true;
+            this.rbPhasors.CheckedChanged += new System.EventHandler(this.rbPhasors_CheckedChanged);
             // 
             // rbRotation
             // 
@@ -438,23 +443,58 @@
             this.rbRotation.UseVisualStyleBackColor = true;
             this.rbRotation.CheckedChanged += new System.EventHandler(this.rbRotation_CheckedChanged);
             // 
-            // rbPhasors
+            // groupBox1
             // 
-            this.rbPhasors.AutoSize = true;
-            this.rbPhasors.Location = new System.Drawing.Point(12, 42);
-            this.rbPhasors.Name = "rbPhasors";
-            this.rbPhasors.Size = new System.Drawing.Size(63, 17);
-            this.rbPhasors.TabIndex = 0;
-            this.rbPhasors.TabStop = true;
-            this.rbPhasors.Text = "Phasors";
-            this.rbPhasors.UseVisualStyleBackColor = true;
-            this.rbPhasors.CheckedChanged += new System.EventHandler(this.rbPhasors_CheckedChanged);
+            this.groupBox1.Controls.Add(this.rbRotation);
+            this.groupBox1.Controls.Add(this.rbPhasors);
+            this.groupBox1.Location = new System.Drawing.Point(23, 262);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(118, 75);
+            this.groupBox1.TabIndex = 39;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Analyzer Model";
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.rbLinear);
+            this.groupBox2.Controls.Add(this.rbCircular);
+            this.groupBox2.Location = new System.Drawing.Point(29, 481);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(118, 75);
+            this.groupBox2.TabIndex = 40;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Photon Type";
+            // 
+            // rbLinear
+            // 
+            this.rbLinear.AutoSize = true;
+            this.rbLinear.Location = new System.Drawing.Point(19, 23);
+            this.rbLinear.Name = "rbLinear";
+            this.rbLinear.Size = new System.Drawing.Size(54, 17);
+            this.rbLinear.TabIndex = 1;
+            this.rbLinear.TabStop = true;
+            this.rbLinear.Text = "Linear";
+            this.rbLinear.UseVisualStyleBackColor = true;
+            this.rbLinear.CheckedChanged += new System.EventHandler(this.rbLinear_CheckedChanged);
+            // 
+            // rbCircular
+            // 
+            this.rbCircular.AutoSize = true;
+            this.rbCircular.Location = new System.Drawing.Point(19, 46);
+            this.rbCircular.Name = "rbCircular";
+            this.rbCircular.Size = new System.Drawing.Size(60, 17);
+            this.rbCircular.TabIndex = 0;
+            this.rbCircular.TabStop = true;
+            this.rbCircular.Text = "Circular";
+            this.rbCircular.UseVisualStyleBackColor = true;
+            this.rbCircular.CheckedChanged += new System.EventHandler(this.rbCircular_CheckedChanged);
             // 
             // ControlPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1904, 1041);
+            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.label9);
@@ -504,6 +544,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbTwist)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -541,9 +583,12 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label lblPhasor2Theta;
         private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.RadioButton rbRotation;
         private System.Windows.Forms.RadioButton rbPhasors;
+        private System.Windows.Forms.RadioButton rbRotation;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.RadioButton rbLinear;
+        private System.Windows.Forms.RadioButton rbCircular;
     }
 }
 

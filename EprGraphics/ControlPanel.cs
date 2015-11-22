@@ -17,6 +17,7 @@ namespace EprGrapics
         clFilter Analyzer_A;
         clFilter Analyzer_B;
         AnalyzeMethod analyzeMethod = AnalyzeMethod.Orientation;
+        Boolean isLinear = true;
 
         public double PhotonAxisDeg
         {
@@ -102,8 +103,16 @@ namespace EprGrapics
              // Now do a phasor visualisation on two analyzers
             //PhotonA.MakeElliptical(PhotonAxis, azimuth, phi, true);
             //PhotonB.MakeElliptical(PhotonAxis, azimuth, phi, false);
-            PhotonA.MakeLinear(PhotonAxis, phi);
-            PhotonB.MakeLinear(PhotonAxis, phi);
+            if (isLinear)
+            {
+                PhotonA.MakeLinear(PhotonAxis, phi);
+                PhotonB.MakeLinear(PhotonAxis, phi);
+            }
+            else
+            {
+                PhotonA.MakeElliptical(PhotonAxis, EprMath.halfPI, phi, true);
+                PhotonB.MakeElliptical(PhotonAxis, EprMath.halfPI, phi, false);
+            }
             Analyzer_A.ShowDial();
             bool nResultA = PhotonA.Analyze(Analyzer_A,true, lblPhasor1Theta);
             Analyzer_B.ShowDial();
@@ -217,8 +226,12 @@ namespace EprGrapics
                     //bool bShowPhasor = (bShow && ((nPhotonAngle % 10) == 0));
                     //for (int nPhotonPhase = 0; nPhotonPhase < 360; nPhotonPhase++)
                     //	double dPhotonPhase = (double)nPhotonPhase/ 1.0;
-                    MyPhotonAlice.MakeElliptical(dPhotonAngle, EprMath.halfPI, EprMath.halfPI, true);
-                    MyPhotonBob.MakeElliptical(dPhotonAngle +EprMath.quarterPI ,  EprMath.halfPI, Math.PI, false);
+                    
+                    MyPhotonAlice.MakeCircular(dPhotonAngle, true, EprMath.halfPI);
+                    MyPhotonBob.MakeCircular(dPhotonAngle, false, Math.PI);
+                    
+                    //MyPhotonAlice.MakeElliptical(dPhotonAngle, EprMath.halfPI, Math.PI/2.0, true);
+                    //MyPhotonBob.MakeElliptical(dPhotonAngle, EprMath.halfPI, Math.PI, false);
                     bResultAlice = (MyPhotonAlice.Analyze(Analyzer_A, false,false,null));
                     bResultBob = (MyPhotonBob.Analyze(Analyzer_B, false, false, null));
                     if (bResultAlice == bResultBob)
@@ -269,6 +282,26 @@ namespace EprGrapics
                 UpDatePhasorDisplay(sourcePhaseDeg, _photonAzimuthDeg);
             }
 
+        }
+
+        private void rbLinear_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rbLinear.Checked)
+            {
+                rbCircular.Checked = false;
+                isLinear = true;
+                UpDatePhasorDisplay(sourcePhaseDeg, _photonAzimuthDeg);
+            }
+        }
+
+        private void rbCircular_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rbCircular.Checked)
+            {
+                rbLinear.Checked = false;
+                isLinear = false;
+                UpDatePhasorDisplay(sourcePhaseDeg, _photonAzimuthDeg);
+            }
         }
 
     }

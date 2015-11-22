@@ -41,7 +41,7 @@ namespace EprGrapics
             get { return _isClockwise; }
             set { _isClockwise = value; }
         }
-        public int PhaseSense
+        public int isClockwise
         {
             get { return _isClockwise ? 1 : -1; }
         }
@@ -82,8 +82,8 @@ namespace EprGrapics
             _axisResult = _axisFlip * Math.PI;
            // Calculate axisDelta as a fraction of 90
            double shiftSinSq = EprMath.ExtendedSineSq(axisDelta)*Math.PI;
-           double phaseDelta = (shiftSinSq - shiftSinSq * PhaseSense)/2.0;
-           double effectivePhase = Phase*PhaseSense + phaseDelta/2.0;
+           double phaseDelta = (shiftSinSq - shiftSinSq * isClockwise)/2.0;
+           double effectivePhase = Phase*isClockwise + phaseDelta/2.0;
            double mappedResult = EprMath.ExtendedSineSq(effectivePhase);
            _phasorResult = EprMath.Limit180(_axisResult +  mappedResult* Math.PI);
            if ((_phasorResult <= EprMath.halfPI) && (_phasorResult > -EprMath.halfPI))
@@ -139,7 +139,7 @@ namespace EprGrapics
         double _spinAxisInclination;
         double _spinAxisAzimuth;
         double _spinPhase;
-        bool _phaseSense;
+        bool _isClockwise;
         // Spin Axis is the axis of rotation of the phase vector in the polarized beam
         Vector3 _spinAxisVector;
         Vector3 _phaseZeroVector; // phase zero vector is intersection between planes defined by normal to analyzer face (worldThrough), and the plane of spin (normal to spin axis) of the polarized beam.
@@ -165,7 +165,7 @@ namespace EprGrapics
             }
             // Now finally rotate phase vector about spin Axis
             // Intersect between plane of photon rotation and analyzer face.
-            _phaseVector = Vector3.RotateAroundAxis(_phaseZeroVector,_spinAxisVector,(_phaseSense? _spinPhase :  -_spinPhase));
+            _phaseVector = Vector3.RotateAroundAxis(_phaseZeroVector,_spinAxisVector,(_isClockwise? _spinPhase :  -_spinPhase));
         }        
 
 
@@ -182,12 +182,12 @@ namespace EprGrapics
             get { return _method; }
         }
 
-        public void MakeElliptical(double spinAxisInclination, double spinAxisAzimuth, double spinPhase, bool phaseSense)
+        public void MakeElliptical(double spinAxisInclination, double spinAxisAzimuth, double spinPhase, bool isClockwise)
         {
             _spinAxisAzimuth = EprMath.Limit90(spinAxisAzimuth);
             _spinPhase = EprMath.Limit180(spinPhase);
             _spinAxisInclination = EprMath.Limit90(spinAxisInclination);
-            _phaseSense = phaseSense;
+            _isClockwise = isClockwise;
         }
 
         public void MakeLinear(double spinAxisInclination, double spinPhase)
