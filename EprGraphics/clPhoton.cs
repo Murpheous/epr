@@ -182,28 +182,27 @@ namespace EprGrapics
             get { return _method; }
         }
 
-        public void MakeElliptical(double spinAxisInclination, double spinAxisAzimuth, double spinPhase, bool isClockwise)
+        public void MakeElliptical(double spinAxisInclination, double spinAxisAzimuth, double spinPhase)
         {
             _spinAxisAzimuth = EprMath.Limit90(spinAxisAzimuth);
             _spinPhase = EprMath.Limit180(spinPhase);
             _spinAxisInclination = EprMath.Limit90(spinAxisInclination);
-            _isClockwise = isClockwise;
         }
 
         public void MakeLinear(double spinAxisInclination, double spinPhase)
         {
-            MakeElliptical(spinAxisInclination, 0.0, spinPhase, true);
+            MakeElliptical(spinAxisInclination, 0.0, spinPhase);
         }
 
         public void MakeLinear(double spinAxisInclination, bool isClockwise, double spinPhase)
         {
-            MakeElliptical(spinAxisInclination, 0.0, spinPhase, isClockwise);
+            MakeElliptical(spinAxisInclination, (isClockwise ? 0.0 : Math.PI), spinPhase);
         }
  
         public void MakeCircular(double spinAxisInclination, bool isClockwise, double spinPhase)
         {
            int tmpSign = (isClockwise ? 1 : -1);
-           MakeElliptical(spinAxisInclination, EprMath.halfPI * tmpSign, spinPhase, isClockwise);
+           MakeElliptical(spinAxisInclination, EprMath.halfPI * tmpSign, spinPhase);
         }
 
         public bool Analyze(clFilter analyzer, bool bShow, bool ShowLimits, Label lblPhasor)

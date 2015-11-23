@@ -110,8 +110,8 @@ namespace EprGrapics
             }
             else
             {
-                PhotonA.MakeElliptical(PhotonAxis, EprMath.halfPI, phi, true);
-                PhotonB.MakeElliptical(PhotonAxis, EprMath.halfPI, phi, false);
+                PhotonA.MakeCircular(PhotonAxis, true, phi);
+                PhotonB.MakeCircular(PhotonAxis, false, phi);
             }
             Analyzer_A.ShowDial();
             bool nResultA = PhotonA.Analyze(Analyzer_A,true, lblPhasor1Theta);
@@ -164,7 +164,7 @@ namespace EprGrapics
                 {
                     double dPhi = (double)nPhiSteps / 10.0;
                     //MyPhoton.MakeLinear(0.0, dPhi*Math.PI/180);
-                    MyPhoton.MakeElliptical(0,_photonAzimuthDeg*(Math.PI/180),dPhi * (Math.PI / 180),true);  
+                    MyPhoton.MakeElliptical(0,_photonAzimuthDeg*(Math.PI/180),dPhi * (Math.PI / 180));  
                     if (MyPhoton.Analyze(Analyzer_A, false,false,null))
                         nYes++;
                     else
