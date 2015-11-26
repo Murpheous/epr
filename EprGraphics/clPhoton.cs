@@ -147,15 +147,15 @@ namespace EprGrapics
 
         private void setSpinVectors()
         {
-            Vector3 through = new Vector3(worldThrough);
+            Vector3 paseVec = new Vector3(worldThrough);
             _spinAxisVector = new Vector3(worldCross);
             // Start by setting the 'spin axis' azimuth in space
             _phaseZeroVector = new Vector3(worldUp);  
             if (_spinAxisAzimuth != 0.0)
             {
                 _spinAxisVector.RotateAroundY(_spinAxisAzimuth);
-                through.RotateAroundY(_spinAxisAzimuth);
-                _spinAxisVector.RotateAroundAxis(through, _spinAxisInclination);
+                paseVec.RotateAroundY(_spinAxisAzimuth);
+                _spinAxisVector.RotateAroundAxis(paseVec, _spinAxisInclination);
                 _phaseZeroVector = worldThrough.CrossProduct(_spinAxisVector);
             }
             else
