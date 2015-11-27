@@ -114,10 +114,15 @@ namespace EprGrapics
                 PhotonB.MakeCircular(PhotonAxis, false, phi);
             }
             Analyzer_A.ShowDial();
-            bool nResultA = PhotonA.Analyze(Analyzer_A,true, lblPhasor1Theta);
-            Analyzer_B.ShowDial();
+            bool bResultA = PhotonA.Analyze(Analyzer_A,true, lblPhasor1Theta);
+            if (bResultA)
+            { }
+            else
+            { }
+
+                Analyzer_B.ShowDial();
             bool nResultB = PhotonB.Analyze(Analyzer_B, true,lblPhasor2Theta);
-            lblAnalyzer1Result.Text = nResultA ? "Alice" : "Bob";
+            lblAnalyzer1Result.Text = bResultA ? "Alice" : "Bob";
             lblAnalyzer2Result.Text = nResultB ? "Alice" : "Bob";
             this.ResumeLayout();
 /*
@@ -160,12 +165,12 @@ namespace EprGrapics
                 Analyzer_A.AxisDeg = dThetaAxis;
                 int nNo = 0;
                 int nYes = 0;
-                for (nPhiSteps = 0; nPhiSteps < 3600; nPhiSteps++)
+                for (nPhiSteps = -1800; nPhiSteps < 1800; nPhiSteps++)
                 {
                     double dPhi = (double)nPhiSteps / 10.0;
                     //MyPhoton.MakeLinear(0.0, dPhi*Math.PI/180);
-                    MyPhoton.MakeElliptical(0,_photonAzimuthDeg*(Math.PI/180),dPhi * (Math.PI / 180));  
-                    if (MyPhoton.Analyze(Analyzer_A, false,false,null))
+                    MyPhoton.MakeLinear(0.0,dPhi * (Math.PI / 180));  
+                    if (MyPhoton.Analyze(Analyzer_A, false, false, null))
                         nYes++;
                     else
                         nNo++;
@@ -228,7 +233,7 @@ namespace EprGrapics
                     //	double dPhotonPhase = (double)nPhotonPhase/ 1.0;
                     
                     MyPhotonAlice.MakeCircular(dPhotonAngle, true, EprMath.halfPI);
-                    MyPhotonBob.MakeCircular(dPhotonAngle, false, Math.PI);
+                    MyPhotonBob.MakeCircular(dPhotonAngle, false, -EprMath.halfPI);
                     
                     //MyPhotonAlice.MakeElliptical(dPhotonAngle, EprMath.halfPI, Math.PI/2.0, true);
                     //MyPhotonBob.MakeElliptical(dPhotonAngle, EprMath.halfPI, Math.PI, false);

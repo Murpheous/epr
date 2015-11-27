@@ -19,21 +19,10 @@ namespace EprGrapics
         bool _isClockwise;
         
         double _phasorResult;
-        double _axisResult;
-        int    _axisFlip;
 
         public double PhasorResult
         {
         	get {return _phasorResult;}
-        }
-
-        public AnalyzeChannel ReferenceChannel
-        {
-            get { return (_axisFlip % 2 == 0) ? AnalyzeChannel.Alice : AnalyzeChannel.Bob; }
-        }
-        public double AxisResult
-        {
-            get { return _axisResult; }
         }
 
         public bool IsClockwise
@@ -61,31 +50,20 @@ namespace EprGrapics
             get { return _incidentAxis*180.0/Math.PI; }
         }
 
-
         public bool Analyze(clFilter analyzer)
         {
            bool bResult = true;
-
-
            // Check the difference is less than 90 degrees, if so, tweak to keep in +- 90
            double analyzerAxis = EprMath.Limit90(analyzer.Inclination);
            double incidentAxis = EprMath.Limit90(Inclination);
            double axisDelta = EprMath.Limit90(incidentAxis - analyzerAxis);
-           _axisFlip = 0;
-           if (axisDelta < -EprMath.quarterPI)
-               _axisFlip = 1;
-           else if (axisDelta >= EprMath.quarterPI)
-               _axisFlip = -1;
-           axisDelta += EprMath.halfPI * _axisFlip;
-           // Generate new 'axis' vector aligned either with Analyzer A or B axis, depending on whether one or other is closest
-          
-            _axisResult = _axisFlip * Math.PI;
+
            // Calculate axisDelta as a fraction of 90
            double shiftSinSq = EprMath.ExtendedSineSq(axisDelta)*Math.PI;
            double phaseDelta = (shiftSinSq - shiftSinSq * isClockwise)/2.0;
            double effectivePhase = Phase*isClockwise + phaseDelta/2.0;
            double mappedResult = EprMath.ExtendedSineSq(effectivePhase);
-           _phasorResult = EprMath.Limit180(_axisResult +  mappedResult* Math.PI);
+           _phasorResult = EprMath.Limit180(mappedResult* Math.PI);
            if ((_phasorResult <= EprMath.halfPI) && (_phasorResult > -EprMath.halfPI))
                bResult = true;
            else
@@ -125,6 +103,7 @@ namespace EprGrapics
         static Vector3 worldUp = new Vector3(0, 1, 0);
         static Vector3 worldCross = new Vector3(0, 0, 1);
         static Vector3 worldThrough = new Vector3(1, 0, 0);
+        List<clPhasor> Phasors = new List<clPhasor>();
 
         /*
                    // Choose Y axis as up, Z axis as Left, and X axis is into analyzer.
@@ -139,33 +118,29 @@ namespace EprGrapics
         double _spinAxisInclination;
         double _spinAxisAzimuth;
         double _spinPhase;
-        bool _isClockwise;
+
         // Spin Axis is the axis of rotation of the phase vector in the polarized beam
         Vector3 _spinAxisVector;
         Vector3 _phaseZeroVector; // phase zero vector is intersection between planes defined by normal to analyzer face (worldThrough), and the plane of spin (normal to spin axis) of the polarized beam.
         Vector3 _phaseVector;         // phaseVector is the actual instantaneous phase of the particular photon
+        // Vector analysis stuff
+        double _axisResult;
+        int _axisFlip;
 
         private void setSpinVectors()
         {
-            Vector3 paseVec = new Vector3(worldThrough);
+            _phaseZeroVector = new Vector3(worldUp);
+            _phaseZeroVector.RotateAroundAxis(worldThrough, _spinAxisInclination);
             _spinAxisVector = new Vector3(worldCross);
+            _spinAxisVector.RotateAroundAxis(worldThrough, _spinAxisInclination);
             // Start by setting the 'spin axis' azimuth in space
-            _phaseZeroVector = new Vector3(worldUp);  
             if (_spinAxisAzimuth != 0.0)
             {
-                _spinAxisVector.RotateAroundY(_spinAxisAzimuth);
-                paseVec.RotateAroundY(_spinAxisAzimuth);
-                _spinAxisVector.RotateAroundAxis(paseVec, _spinAxisInclination);
-                _phaseZeroVector = worldThrough.CrossProduct(_spinAxisVector);
-            }
-            else
-            {
-                _spinAxisVector.RotateAroundX( _spinAxisInclination);
-                _phaseZeroVector = Vector3.RotateAroundX(worldUp,_spinAxisInclination);
+                _spinAxisVector.RotateAroundAxis(_phaseZeroVector,_spinAxisAzimuth);
             }
             // Now finally rotate phase vector about spin Axis
             // Intersect between plane of photon rotation and analyzer face.
-            _phaseVector = Vector3.RotateAroundAxis(_phaseZeroVector,_spinAxisVector,(_isClockwise? _spinPhase :  -_spinPhase));
+            _phaseVector = Vector3.RotateAroundAxis(_phaseZeroVector,_spinAxisVector, _spinPhase);
         }        
 
 
@@ -182,27 +157,48 @@ namespace EprGrapics
             get { return _method; }
         }
 
-        public void MakeElliptical(double spinAxisInclination, double spinAxisAzimuth, double spinPhase)
+       /* public void MakeElliptical(double spinAxisInclination, double spinAxisAzimuth, double spinPhase)
         {
             _spinAxisAzimuth = EprMath.Limit90(spinAxisAzimuth);
             _spinPhase = EprMath.Limit180(spinPhase);
             _spinAxisInclination = EprMath.Limit90(spinAxisInclination);
+        } */
+
+
+        public void MakeLinear(double spinAxisInclination, bool isClockwise, double spinPhase)
+        {
+            if (isClockwise)
+                _spinAxisAzimuth = EprMath.halfPI;
+            else
+                _spinAxisAzimuth = -EprMath.halfPI;
+            _spinAxisInclination = EprMath.Limit90(spinAxisInclination);
+            _spinPhase = spinPhase;
+            setSpinVectors();
+
+            Phasors.Clear();
+            Phasors.Add(new clPhasor(spinAxisInclination, isClockwise, spinPhase));
+            Phasors.Add(new clPhasor(spinAxisInclination, !isClockwise, spinPhase));
+
         }
 
         public void MakeLinear(double spinAxisInclination, double spinPhase)
         {
-            MakeElliptical(spinAxisInclination, 0.0, spinPhase);
+            MakeLinear(spinAxisInclination, true, spinPhase);
         }
 
-        public void MakeLinear(double spinAxisInclination, bool isClockwise, double spinPhase)
-        {
-            MakeElliptical(spinAxisInclination, (isClockwise ? 0.0 : Math.PI), spinPhase);
-        }
- 
         public void MakeCircular(double spinAxisInclination, bool isClockwise, double spinPhase)
         {
-           int tmpSign = (isClockwise ? 1 : -1);
-           MakeElliptical(spinAxisInclination, EprMath.halfPI * tmpSign, spinPhase);
+            if (isClockwise)
+                _spinAxisAzimuth = 0.0;
+            else
+                _spinAxisAzimuth = Math.PI;
+            _spinAxisInclination = EprMath.Limit90(spinAxisInclination);
+            _spinPhase = spinPhase;
+            setSpinVectors();
+
+            Phasors.Clear();
+            Phasors.Add(new clPhasor(spinAxisInclination, isClockwise, spinPhase));
+            
         }
 
         public bool Analyze(clFilter analyzer, bool bShow, bool ShowLimits, Label lblPhasor)
@@ -210,7 +206,6 @@ namespace EprGrapics
             // Phasors are used when projecting a photon on to a linear analyzer. A linear polarization looks like two contra-rotating circular phasors.
             // Idea is to take an incident photon and project it as a superposition of two circular phosors in the analyzer state-space
             bool isAlice = true;
-            List<clPhasor> Phasors = new List<clPhasor>();
             setSpinVectors();
             if (Method == AnalyzeMethod.Orientation)
             {
@@ -218,7 +213,6 @@ namespace EprGrapics
                 double analyzerAxis = EprMath.Limit90(analyzer.Inclination);
                 double incidentAxis = EprMath.Limit90(_spinAxisInclination);
                 double axisDelta = 2.0 * (incidentAxis - analyzerAxis);
-                                   
                 // ************** From here we deal with the analyzer map
                 // Now we can calculate the phasor on the 2D Yes/No map of the analyzer from the spin axis vector and the mapped phase.
                 double phaseRange = EprMath.halfPI + EprMath.halfPI * (1 - Math.Pow(Math.Cos(_spinAxisAzimuth), 2.0));
@@ -241,52 +235,20 @@ namespace EprGrapics
             }
             else if (Method == AnalyzeMethod.Phasors)
             {
-                double phaseAngle = 0;
-                double inclination = 0;
-                Vector3 phaseProjected = new Vector3();
-                double phaseDot = _phaseVector.DotProduct(worldThrough);
-                if (Math.Abs(phaseDot) >= 1.0)
-                {
-                    phaseAngle = phaseDot * _spinPhase;
-                    inclination = worldUp.SignedVectorAngle(_phaseVector, worldThrough);
-                }
-                else
-                {
-                    if (phaseDot == 0.0)
-                    {
-                        phaseProjected = _phaseVector;
-                    }
-                    else
-                    {
-                        phaseProjected = _phaseVector - phaseDot * worldThrough;
-                        phaseProjected.Normalize();
-                    }
-                    Vector3 perp = new Vector3(phaseProjected);
-                    perp.RotateAroundX(EprMath.halfPI);
-                    phaseAngle = _phaseVector.SignedVectorAngle(phaseProjected, perp);
-                    inclination = worldUp.SignedVectorAngle(phaseProjected, worldThrough);
-                }
-                Phasors.Add(new clPhasor(inclination, true, phaseAngle));
-                Phasors.Add(new clPhasor(inclination, false, phaseAngle));
                 List<int> answers = new List<int>(Phasors.Count());
-                AnalyzeChannel refChannel = AnalyzeChannel.Alice;
+                int finalanswer = 1;
+                int answer;
                 foreach (clPhasor phasor in Phasors)
                 {
-                    answers.Add(phasor.Analyze(analyzer) ? 1 : -1);
-                    refChannel = phasor.ReferenceChannel;
-                }
-                int finalanswer = 1;
-                foreach (int n in answers)
-                {
-                    finalanswer *= n;
+                    answer = phasor.Analyze(analyzer) ? 1 : -1;
+                    answers.Add(answer);
+                    finalanswer *= answer;
                 }
                 if (bShow && analyzer.GotPicture())
                 {
                     analyzer.ShowMapping(Phasors, ShowLimits, lblPhasor, Method);
                 }
                 isAlice = (finalanswer > 0);
-                if (refChannel != AnalyzeChannel.Alice)
-                    isAlice = !isAlice;
             }
             return isAlice;
         }
@@ -383,10 +345,10 @@ namespace EprGrapics
             }
             if (!ShowAll) 
                 return;
-            nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + mappedPhasors[0].AxisResult)));
-            nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + mappedPhasors[0].AxisResult)));
+            nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + mappedPhasors[0].PhasorResult)));
+            nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + mappedPhasors[0].PhasorResult)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
-            if ((mappedPhasors[0].AxisResult > -EprMath.halfPI) && (mappedPhasors[0].AxisResult <= EprMath.halfPI))
+            if ((mappedPhasors[0].PhasorResult > -EprMath.halfPI) && (mappedPhasors[0].PhasorResult <= EprMath.halfPI))
                 MyPenB.Color = Color.GreenYellow;
             else
                 MyPenB.Color = Color.Orange;
