@@ -124,8 +124,6 @@ namespace EprGrapics
         Vector3 _phaseZeroVector; // phase zero vector is intersection between planes defined by normal to analyzer face (worldThrough), and the plane of spin (normal to spin axis) of the polarized beam.
         Vector3 _phaseVector;         // phaseVector is the actual instantaneous phase of the particular photon
         // Vector analysis stuff
-        double _axisResult;
-        int _axisFlip;
 
         private void setSpinVectors()
         {
@@ -168,11 +166,11 @@ namespace EprGrapics
         public void MakeLinear(double spinAxisInclination, bool isClockwise, double spinPhase)
         {
             if (isClockwise)
-                _spinAxisAzimuth = EprMath.halfPI;
+                _spinAxisAzimuth = 0.0;
             else
-                _spinAxisAzimuth = -EprMath.halfPI;
+                _spinAxisAzimuth = -Math.PI;
             _spinAxisInclination = EprMath.Limit90(spinAxisInclination);
-            _spinPhase = spinPhase;
+            _spinPhase = EprMath.Limit180(spinPhase);
             setSpinVectors();
 
             Phasors.Clear();
@@ -189,10 +187,15 @@ namespace EprGrapics
         public void MakeCircular(double spinAxisInclination, bool isClockwise, double spinPhase)
         {
             if (isClockwise)
-                _spinAxisAzimuth = 0.0;
+            {
+                _spinAxisAzimuth = EprMath.halfPI;
+            }
             else
-                _spinAxisAzimuth = Math.PI;
-            _spinAxisInclination = EprMath.Limit90(spinAxisInclination);
+            {
+                _spinAxisAzimuth = -EprMath.halfPI;
+            }
+            _spinAxisInclination = 0.0;
+            //EprMath.Limit90(spinAxisInclination);
             _spinPhase = spinPhase;
             setSpinVectors();
 

@@ -165,7 +165,7 @@ namespace EprGrapics
                 Analyzer_A.AxisDeg = dThetaAxis;
                 int nNo = 0;
                 int nYes = 0;
-                for (nPhiSteps = -1800; nPhiSteps < 1800; nPhiSteps++)
+                for (nPhiSteps = 0; nPhiSteps < 3600; nPhiSteps++)
                 {
                     double dPhi = (double)nPhiSteps / 10.0;
                     //MyPhoton.MakeLinear(0.0, dPhi*Math.PI/180);
