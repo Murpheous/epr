@@ -125,8 +125,9 @@ namespace EprGrapics
         Vector3 _phaseVector;         // phaseVector is the actual instantaneous phase of the particular photon
         // Vector analysis stuff
 
-        private void setSpinVectors()
+        private void setPoyntingVector()
         {
+            // Start State is linear, rotation axis = world cross, zero phase = up
             _phaseZeroVector = new Vector3(worldUp);
             _phaseZeroVector.RotateAroundAxis(worldThrough, _spinAxisInclination);
             _spinAxisVector = new Vector3(worldCross);
@@ -171,7 +172,7 @@ namespace EprGrapics
                 _spinAxisAzimuth = -Math.PI;
             _spinAxisInclination = EprMath.Limit90(spinAxisInclination);
             _spinPhase = EprMath.Limit180(spinPhase);
-            setSpinVectors();
+            setPoyntingVector();
 
             Phasors.Clear();
             Phasors.Add(new clPhasor(spinAxisInclination, isClockwise, spinPhase));
@@ -197,7 +198,7 @@ namespace EprGrapics
             _spinAxisInclination = 0.0;
             //EprMath.Limit90(spinAxisInclination);
             _spinPhase = spinPhase;
-            setSpinVectors();
+            setPoyntingVector();
 
             Phasors.Clear();
             Phasors.Add(new clPhasor(spinAxisInclination, isClockwise, spinPhase));
@@ -209,7 +210,7 @@ namespace EprGrapics
             // Phasors are used when projecting a photon on to a linear analyzer. A linear polarization looks like two contra-rotating circular phasors.
             // Idea is to take an incident photon and project it as a superposition of two circular phosors in the analyzer state-space
             bool isAlice = true;
-            setSpinVectors();
+            setPoyntingVector();
             if (Method == AnalyzeMethod.Orientation)
             {
                 // Check the difference is less than 90 degrees, if so, tweak to keep in +- 90
@@ -270,6 +271,7 @@ namespace EprGrapics
             Method = AnalyzeMethod.Orientation;
         }
     }
+
     class clFilter
     {
         double _analyzerAxis;
