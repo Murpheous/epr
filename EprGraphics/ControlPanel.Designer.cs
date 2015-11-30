@@ -54,9 +54,9 @@
             this.lblSourceAzimuth = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.lblPhasor1Theta = new System.Windows.Forms.Label();
+            this.lblPhasorA1Theta = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
-            this.lblPhasor2Theta = new System.Windows.Forms.Label();
+            this.lblPhasorB1Theta = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.rbPhasors = new System.Windows.Forms.RadioButton();
             this.rbRotation = new System.Windows.Forms.RadioButton();
@@ -64,6 +64,8 @@
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.rbLinear = new System.Windows.Forms.RadioButton();
             this.rbCircular = new System.Windows.Forms.RadioButton();
+            this.lblPhasorB2Theta = new System.Windows.Forms.Label();
+            this.lblPhasorA2Theta = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarTheta)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackPhi1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackPhi2)).BeginInit();
@@ -375,16 +377,16 @@
             this.label5.Text = "Phasor θ";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // lblPhasor1Theta
+            // lblPhasorA1Theta
             // 
-            this.lblPhasor1Theta.AutoSize = true;
-            this.lblPhasor1Theta.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblPhasor1Theta.Location = new System.Drawing.Point(97, 179);
-            this.lblPhasor1Theta.MinimumSize = new System.Drawing.Size(50, 0);
-            this.lblPhasor1Theta.Name = "lblPhasor1Theta";
-            this.lblPhasor1Theta.Size = new System.Drawing.Size(50, 15);
-            this.lblPhasor1Theta.TabIndex = 34;
-            this.lblPhasor1Theta.Text = "0";
+            this.lblPhasorA1Theta.AutoSize = true;
+            this.lblPhasorA1Theta.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lblPhasorA1Theta.Location = new System.Drawing.Point(97, 179);
+            this.lblPhasorA1Theta.MinimumSize = new System.Drawing.Size(50, 0);
+            this.lblPhasorA1Theta.Name = "lblPhasorA1Theta";
+            this.lblPhasorA1Theta.Size = new System.Drawing.Size(50, 15);
+            this.lblPhasorA1Theta.TabIndex = 34;
+            this.lblPhasorA1Theta.Text = "0";
             // 
             // label9
             // 
@@ -397,16 +399,16 @@
             this.label9.Text = "Phasor θ";
             this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // lblPhasor2Theta
+            // lblPhasorB1Theta
             // 
-            this.lblPhasor2Theta.AutoSize = true;
-            this.lblPhasor2Theta.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblPhasor2Theta.Location = new System.Drawing.Point(720, 181);
-            this.lblPhasor2Theta.MinimumSize = new System.Drawing.Size(50, 0);
-            this.lblPhasor2Theta.Name = "lblPhasor2Theta";
-            this.lblPhasor2Theta.Size = new System.Drawing.Size(50, 15);
-            this.lblPhasor2Theta.TabIndex = 36;
-            this.lblPhasor2Theta.Text = "0";
+            this.lblPhasorB1Theta.AutoSize = true;
+            this.lblPhasorB1Theta.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lblPhasorB1Theta.Location = new System.Drawing.Point(720, 181);
+            this.lblPhasorB1Theta.MinimumSize = new System.Drawing.Size(50, 0);
+            this.lblPhasorB1Theta.Name = "lblPhasorB1Theta";
+            this.lblPhasorB1Theta.Size = new System.Drawing.Size(50, 15);
+            this.lblPhasorB1Theta.TabIndex = 36;
+            this.lblPhasorB1Theta.Text = "0";
             // 
             // label10
             // 
@@ -489,18 +491,43 @@
             this.rbCircular.UseVisualStyleBackColor = true;
             this.rbCircular.CheckedChanged += new System.EventHandler(this.rbCircular_CheckedChanged);
             // 
+            // lblPhasorB2Theta
+            // 
+            this.lblPhasorB2Theta.AutoSize = true;
+            this.lblPhasorB2Theta.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lblPhasorB2Theta.Location = new System.Drawing.Point(720, 196);
+            this.lblPhasorB2Theta.MinimumSize = new System.Drawing.Size(50, 0);
+            this.lblPhasorB2Theta.Name = "lblPhasorB2Theta";
+            this.lblPhasorB2Theta.Size = new System.Drawing.Size(50, 15);
+            this.lblPhasorB2Theta.TabIndex = 41;
+            this.lblPhasorB2Theta.Text = "0";
+            // 
+            // lblPhasorA2Theta
+            // 
+            this.lblPhasorA2Theta.AutoSize = true;
+            this.lblPhasorA2Theta.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lblPhasorA2Theta.Location = new System.Drawing.Point(97, 194);
+            this.lblPhasorA2Theta.MinimumSize = new System.Drawing.Size(50, 0);
+            this.lblPhasorA2Theta.Name = "lblPhasorA2Theta";
+            this.lblPhasorA2Theta.Size = new System.Drawing.Size(50, 15);
+            this.lblPhasorA2Theta.TabIndex = 42;
+            this.lblPhasorA2Theta.Text = "0";
+            this.lblPhasorA2Theta.Click += new System.EventHandler(this.lblPhasor2Theta_Click);
+            // 
             // ControlPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1904, 1041);
+            this.Controls.Add(this.lblPhasorA2Theta);
+            this.Controls.Add(this.lblPhasorB2Theta);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.label9);
-            this.Controls.Add(this.lblPhasor2Theta);
+            this.Controls.Add(this.lblPhasorB1Theta);
             this.Controls.Add(this.label5);
-            this.Controls.Add(this.lblPhasor1Theta);
+            this.Controls.Add(this.lblPhasorA1Theta);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.lblSourceAzimuth);
             this.Controls.Add(this.label2);
@@ -579,9 +606,9 @@
         private System.Windows.Forms.Label lblSourceAzimuth;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Label lblPhasor1Theta;
+        private System.Windows.Forms.Label lblPhasorA1Theta;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.Label lblPhasor2Theta;
+        private System.Windows.Forms.Label lblPhasorB1Theta;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.RadioButton rbPhasors;
         private System.Windows.Forms.RadioButton rbRotation;
@@ -589,6 +616,8 @@
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.RadioButton rbLinear;
         private System.Windows.Forms.RadioButton rbCircular;
+        private System.Windows.Forms.Label lblPhasorB2Theta;
+        private System.Windows.Forms.Label lblPhasorA2Theta;
     }
 }
 

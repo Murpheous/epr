@@ -25,12 +25,12 @@ namespace EprGrapics
         	get {return _phasorResult;}
         }
 
-        public bool IsClockwise
+        public bool IsClockWise
         {
             get { return _isClockwise; }
             set { _isClockwise = value; }
         }
-        public int isClockwise
+        public int Sense
         {
             get { return _isClockwise ? 1 : -1; }
         }
@@ -57,11 +57,14 @@ namespace EprGrapics
            double analyzerAxis = EprMath.Limit90(analyzer.Inclination);
            double incidentAxis = EprMath.Limit90(Inclination);
            double axisDelta = EprMath.Limit90(incidentAxis - analyzerAxis);
-
+           /* 
            // Calculate axisDelta as a fraction of 90
            double shiftSinSq = EprMath.ExtendedSineSq(axisDelta)*Math.PI;
-           double phaseDelta = (shiftSinSq - shiftSinSq * isClockwise)/2.0;
-           double effectivePhase = Phase*isClockwise + phaseDelta/2.0;
+           double phaseDelta = (shiftSinSq - shiftSinSq * Sense)/2.0;
+           double effectivePhase = Phase*Sense + phaseDelta/2.0;
+           */
+           double phaseDelta = (axisDelta - axisDelta * Sense) / 2.0;
+           double effectivePhase = Phase*Sense + phaseDelta;  
            double mappedResult = EprMath.ExtendedSineSq(effectivePhase);
            _phasorResult = EprMath.Limit180(mappedResult* Math.PI);
            if ((_phasorResult <= EprMath.halfPI) && (_phasorResult > -EprMath.halfPI))
@@ -72,9 +75,9 @@ namespace EprGrapics
         }
 
 
-        public clPhasor(double srcAxis, bool IsClockwise, double srcPhase)
+        public clPhasor(double srcAxis, bool Sense, double srcPhase)
         {
-            _isClockwise = IsClockwise;
+            _isClockwise = Sense;
             Phase = srcPhase;
             Inclination = srcAxis;
         }
@@ -164,9 +167,9 @@ namespace EprGrapics
         } */
 
 
-        public void MakeLinear(double spinAxisInclination, bool isClockwise, double spinPhase)
+        public void MakeLinear(double spinAxisInclination, bool Sense, double spinPhase)
         {
-            if (isClockwise)
+            if (Sense)
                 _spinAxisAzimuth = 0.0;
             else
                 _spinAxisAzimuth = -Math.PI;
@@ -175,8 +178,8 @@ namespace EprGrapics
             setPoyntingVector();
 
             Phasors.Clear();
-            Phasors.Add(new clPhasor(spinAxisInclination, isClockwise, spinPhase));
-            Phasors.Add(new clPhasor(spinAxisInclination, !isClockwise, spinPhase));
+            Phasors.Add(new clPhasor(spinAxisInclination, Sense, spinPhase));
+            Phasors.Add(new clPhasor(spinAxisInclination, !Sense, spinPhase));
 
         }
 
@@ -185,9 +188,9 @@ namespace EprGrapics
             MakeLinear(spinAxisInclination, true, spinPhase);
         }
 
-        public void MakeCircular(double spinAxisInclination, bool isClockwise, double spinPhase)
+        public void MakeCircular(double spinAxisInclination, bool Sense, double spinPhase)
         {
-            if (isClockwise)
+            if (Sense)
             {
                 _spinAxisAzimuth = EprMath.halfPI;
             }
@@ -201,11 +204,11 @@ namespace EprGrapics
             setPoyntingVector();
 
             Phasors.Clear();
-            Phasors.Add(new clPhasor(spinAxisInclination, isClockwise, spinPhase));
+            Phasors.Add(new clPhasor(spinAxisInclination, Sense, spinPhase));
             
         }
 
-        public bool Analyze(clFilter analyzer, bool bShow, bool ShowLimits, Label lblPhasor)
+        public bool Analyze(clFilter analyzer, bool bShow, bool ShowLimits, Label lblPhasor1, Label lblPhasor2)
         {
             // Phasors are used when projecting a photon on to a linear analyzer. A linear polarization looks like two contra-rotating circular phasors.
             // Idea is to take an incident photon and project it as a superposition of two circular phosors in the analyzer state-space
@@ -233,7 +236,7 @@ namespace EprGrapics
                 isAlice = ((_phasorResult > (-EprMath.halfPI)) && (_phasorResult <= EprMath.halfPI));
                 if (bShow && analyzer.GotPicture())
                 {
-                    analyzer.ShowMapping(_phasorResult,axisResult,phaseCieling,phaseFloor, lblPhasor);
+                    analyzer.ShowMapping(_phasorResult,axisResult,phaseCieling,phaseFloor, lblPhasor1, lblPhasor2);
                 }
                 return isAlice;
             }
@@ -250,16 +253,16 @@ namespace EprGrapics
                 }
                 if (bShow && analyzer.GotPicture())
                 {
-                    analyzer.ShowMapping(Phasors, ShowLimits, lblPhasor, Method);
+                    analyzer.ShowMapping(Phasors, ShowLimits, lblPhasor1, lblPhasor2, Method);
                 }
                 isAlice = (finalanswer > 0);
             }
             return isAlice;
         }
 
-        public bool Analyze(clFilter Target, bool bShow, Label lblPhasor)
+        public bool Analyze(clFilter Target, bool bShow, Label lblPhasor1, Label lblPhasor2)
         {
-            return (Analyze(Target,bShow,true, lblPhasor));
+            return (Analyze(Target,bShow,true, lblPhasor1, lblPhasor2));
         }
 
         public clPhoton(AnalyzeMethod analyzeMethod)
@@ -288,7 +291,7 @@ namespace EprGrapics
             set { _analyzerAxis = EprMath.Limit180(value*Math.PI/180.0); }
         }
 
-        public void ShowMapping(double mappedTheta, double mappedAxis, double phaseFloor, double phaseCieling, Label lblPhasor)
+        public void ShowMapping(double mappedTheta, double mappedAxis, double phaseFloor, double phaseCieling, Label lblPhasor1, Label lblPhasor2)
         {
             int nCentreX, nCentreY, nRadius, nX, nY;
             Pen MyPenB = new Pen(Color.LightCyan, 2);
@@ -311,24 +314,26 @@ namespace EprGrapics
             else
                 MyPenB.Color = Color.Orange;
             //MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
-            if (lblPhasor != null)
-                lblPhasor.Text = string.Format("{0:F2}°", (mappedTheta * 180) / Math.PI);
+            if (lblPhasor1 != null)
+                lblPhasor1.Text = string.Format("{0:F2}°", (mappedTheta * 180) / Math.PI);
             MyPenB.Color = Color.BlueViolet;
             nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + phaseFloor)));
             nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + phaseFloor)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
-            //MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
+            MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             MyPenB.Color = Color.Bisque;
             nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + phaseCieling)));
             nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + phaseCieling)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
-            //MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
+            MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             MyPicture.Image = MyBitmap;
             MyPicture.Refresh();
+            if (lblPhasor2 != null)
+                lblPhasor2.Text = "--";
 
         }
 
-        public void ShowMapping(List<clPhasor> mappedPhasors, bool ShowAll, Label lblPhasor, AnalyzeMethod method)
+        public void ShowMapping(List<clPhasor> mappedPhasors, bool ShowAll, Label lblPhasor1, Label lblPhasor2, AnalyzeMethod method)
         {
             int nCentreX, nCentreY, nRadius, nX, nY;
             Pen MyPenB = new Pen(Color.LightCyan, 2);
@@ -353,13 +358,15 @@ namespace EprGrapics
             nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + mappedPhasors[0].PhasorResult)));
             nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + mappedPhasors[0].PhasorResult)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
-            if ((mappedPhasors[0].PhasorResult > -EprMath.halfPI) && (mappedPhasors[0].PhasorResult <= EprMath.halfPI))
-                MyPenB.Color = Color.GreenYellow;
-            else
-                MyPenB.Color = Color.Orange;
+
             //MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
-            if (lblPhasor != null)
-                lblPhasor.Text = string.Format("{0:F2}°", (mappedPhasors[mappedPhasors.Count-1].PhasorResult * 180) / Math.PI);
+            if (lblPhasor1 != null)
+                lblPhasor1.Text = string.Format("{0:F2}°", (mappedPhasors[0].PhasorResult * 180) / Math.PI);
+            if (lblPhasor2 != null)
+                if (mappedPhasors.Count > 1)
+                    lblPhasor2.Text = string.Format("{0:F2}°", (mappedPhasors[1].PhasorResult * 180) / Math.PI);
+                else
+                    lblPhasor2.Text = "--";
             MyPicture.Image = MyBitmap;
             MyPicture.Refresh();
             
