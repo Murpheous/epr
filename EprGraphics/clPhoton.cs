@@ -14,8 +14,7 @@ namespace EprGrapics
     class clPhasor
     {
  
-        double _incidentAxis;
-        double _phase;
+        double _phaseAngle;
         bool _isClockwise;
         
         double _phasorResult;
@@ -36,21 +35,11 @@ namespace EprGrapics
         }
         public double Phase
         {
-            get {return  _phase;}
-            set { _phase = EprMath.Limit180(value); }
+            get {return  _phaseAngle;}
+            set { _phaseAngle = EprMath.Limit180(value); }
         }
 
-        public double Inclination
-        {
-            get { return _incidentAxis; }
-            set { _incidentAxis = EprMath.Limit180(value);}
-        }
-        public double sourceAxisDeg
-        {
-            get { return _incidentAxis*180.0/Math.PI; }
-        }
-
-        public bool Analyze(clFilter analyzer)
+        public bool Analyze(clFilter analyzer, double Inclination)
         {
            bool bResult = true;
            // Check the difference is less than 90 degrees, if so, tweak to keep in +- 90
@@ -58,7 +47,7 @@ namespace EprGrapics
            double incidentAxis = EprMath.Limit90(Inclination);
            double axisDelta = EprMath.Limit90(incidentAxis - analyzerAxis);
            double shiftSinSq = EprMath.ExtendedSineSq(axisDelta) * Math.PI;
-           double phaseDelta = (shiftSinSq - shiftSinSq * Sense) / 2.0;
+           double phaseDelta = (shiftSinSq - shiftSinSq * Sense) / 4.0;
            /* 
            // Calculate axisDelta as a fraction of 90
            double shiftSinSq = EprMath.ExtendedSineSq(axisDelta)*Math.PI;
@@ -78,8 +67,7 @@ namespace EprGrapics
         public clPhasor(double srcAxis, bool Sense, double srcPhase)
         {
             _isClockwise = Sense;
-            Phase = srcPhase;
-            Inclination = srcAxis;
+            Phase = EprMath.Limit180(srcAxis + srcPhase * (Sense? 1.0: -1.0));
         }
 
      }
@@ -245,9 +233,21 @@ namespace EprGrapics
                 List<int> answers = new List<int>(Phasors.Count());
                 int finalanswer = 1;
                 int answer;
+                if (Phasors.Count == 0)
+                    return true;
+                if (Phasors.Count == 1)
+                    Phasors.Add(new clPhasor(analyzer.Inclination, !Phasors[0].IsClockWise, 0));
+                double mappedAxis = 0;
                 foreach (clPhasor phasor in Phasors)
                 {
-                    answer = phasor.Analyze(analyzer) ? 1 : -1;
+                    mappedAxis += EprMath.Limit180(phasor.Phase);
+                }
+                mappedAxis = mappedAxis/Phasors.Count;
+                mappedAxis = EprMath.Limit90(mappedAxis);
+ 
+                foreach (clPhasor phasor in Phasors)
+                {
+                    answer = phasor.Analyze(analyzer,mappedAxis) ? 1 : -1;
                     answers.Add(answer);
                     finalanswer *= answer;
                 }

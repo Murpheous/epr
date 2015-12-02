@@ -111,7 +111,7 @@ namespace EprGrapics
             else
             {
                 PhotonA.MakeCircular(PhotonAxis, true, phi);
-                PhotonB.MakeCircular(PhotonAxis, false, phi);
+                PhotonB.MakeCircular(PhotonAxis, false, -phi);
             }
             Analyzer_A.ShowDial();
             bool bResultA = PhotonA.Analyze(Analyzer_A,true, lblPhasorA1Theta, lblPhasorA2Theta);
@@ -133,7 +133,7 @@ namespace EprGrapics
             {
                 double testAxis = i * Math.PI / 1800.0;
                 PhotonA.MakeCircular(testAxis,true, EprMath.quarterPI);
-                PhotonB.MakeCircular(testAxis, false, EprMath.quarterPI);
+                PhotonB.MakeCircular(testAxis, false, -EprMath.quarterPI);
                 if (PhotonA.Analyze(Analyzer_A, false,null,null) == PhotonB.Analyze(Analyzer_B, false,null,null))
                     concurCount++;
                 else
