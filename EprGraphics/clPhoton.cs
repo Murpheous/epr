@@ -57,13 +57,13 @@ namespace EprGrapics
            double analyzerAxis = EprMath.Limit90(analyzer.Inclination);
            double incidentAxis = EprMath.Limit90(Inclination);
            double axisDelta = EprMath.Limit90(incidentAxis - analyzerAxis);
+           double shiftSinSq = EprMath.ExtendedSineSq(axisDelta) * Math.PI;
+           double phaseDelta = (shiftSinSq - shiftSinSq * Sense) / 2.0;
            /* 
            // Calculate axisDelta as a fraction of 90
            double shiftSinSq = EprMath.ExtendedSineSq(axisDelta)*Math.PI;
-           double phaseDelta = (shiftSinSq - shiftSinSq * Sense)/2.0;
            double effectivePhase = Phase*Sense + phaseDelta/2.0;
            */
-           double phaseDelta = (axisDelta - axisDelta * Sense) / 2.0;
            double effectivePhase = Phase*Sense + phaseDelta;  
            double mappedResult = EprMath.ExtendedSineSq(effectivePhase);
            _phasorResult = EprMath.Limit180(mappedResult* Math.PI);
