@@ -33,27 +33,29 @@ namespace EprGrapics
         {
             get { return _isClockwise ? 1 : -1; }
         }
-        public double Phase
+        public double PhaseAngle
         {
             get {return  _phaseAngle;}
             set { _phaseAngle = EprMath.Limit180(value); }
         }
 
-        public bool Analyze(clFilter analyzer, double Inclination)
+        public bool Analyze(clFilter analyzer, double IncidentAxis)
         {
            bool bResult = true;
            // Check the difference is less than 90 degrees, if so, tweak to keep in +- 90
            double analyzerAxis = EprMath.Limit90(analyzer.Inclination);
-           double incidentAxis = EprMath.Limit90(Inclination);
+           double incidentAxis = EprMath.Limit90(IncidentAxis);
            double axisDelta = EprMath.Limit90(incidentAxis - analyzerAxis);
            double shiftSinSq = EprMath.ExtendedSineSq(axisDelta) * Math.PI;
-           double phaseDelta = (shiftSinSq - shiftSinSq * Sense) / 4.0;
+           double phaseDelta = (axisDelta - axisDelta * Sense);
+           double incidentPhase = EprMath.Limit180(PhaseAngle - IncidentAxis);
+           double analyzerPhase = EprMath.Limit180(PhaseAngle - analyzerAxis);
            /* 
            // Calculate axisDelta as a fraction of 90
            double shiftSinSq = EprMath.ExtendedSineSq(axisDelta)*Math.PI;
-           double effectivePhase = Phase*Sense + phaseDelta/2.0;
+           double effectivePhase = PhaseAngle*Sense + phaseDelta/2.0;
            */
-           double effectivePhase = Phase*Sense + phaseDelta;  
+           double effectivePhase = incidentPhase + phaseDelta;  
            double mappedResult = EprMath.ExtendedSineSq(effectivePhase);
            _phasorResult = EprMath.Limit180(mappedResult* Math.PI);
            if ((_phasorResult <= EprMath.halfPI) && (_phasorResult > -EprMath.halfPI))
@@ -67,7 +69,7 @@ namespace EprGrapics
         public clPhasor(double srcAxis, bool Sense, double srcPhase)
         {
             _isClockwise = Sense;
-            Phase = EprMath.Limit180(srcAxis + srcPhase * (Sense? 1.0: -1.0));
+            PhaseAngle = EprMath.Limit180(srcAxis + srcPhase * (Sense? 1.0: -1.0));
         }
 
      }
@@ -230,7 +232,7 @@ namespace EprGrapics
             }
             else if (Method == AnalyzeMethod.Phasors)
             {
-                List<int> answers = new List<int>(Phasors.Count());
+                List<int> answers = new List<int>();
                 int finalanswer = 1;
                 int answer;
                 if (Phasors.Count == 0)
@@ -240,7 +242,7 @@ namespace EprGrapics
                 double mappedAxis = 0;
                 foreach (clPhasor phasor in Phasors)
                 {
-                    mappedAxis += EprMath.Limit180(phasor.Phase);
+                    mappedAxis += EprMath.Limit180(phasor.PhaseAngle);
                 }
                 mappedAxis = mappedAxis/Phasors.Count;
                 mappedAxis = EprMath.Limit90(mappedAxis);

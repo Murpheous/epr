@@ -232,8 +232,8 @@ namespace EprGrapics
                     //for (int nPhotonPhase = 0; nPhotonPhase < 360; nPhotonPhase++)
                     //	double dPhotonPhase = (double)nPhotonPhase/ 1.0;
                     
-                    MyPhotonAlice.MakeCircular(dPhotonAngle, true,0);
-                    MyPhotonBob.MakeCircular(dPhotonAngle, false,0);
+                    MyPhotonAlice.MakeCircular(dPhotonAngle, true,EprMath.halfPI);
+                    MyPhotonBob.MakeCircular(dPhotonAngle, false,-EprMath.halfPI);
                     
                     //MyPhotonAlice.MakeElliptical(dPhotonAngle, EprMath.halfPI, Math.PI/2.0, true);
                     //MyPhotonBob.MakeElliptical(dPhotonAngle, EprMath.halfPI, Math.PI, false);
