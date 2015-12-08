@@ -55,7 +55,7 @@ namespace EprGrapics
            double shiftSinSq = EprMath.ExtendedSineSq(axisDelta)*Math.PI;
            double effectivePhase = PhaseAngle*Sense + phaseDelta/2.0;
            */
-           double effectivePhase = incidentPhase + phaseDelta;  
+           double effectivePhase = incidentPhase + phaseDelta/4.0;  
            double mappedResult = EprMath.ExtendedSineSq(effectivePhase);
            _phasorResult = EprMath.Limit180(mappedResult* Math.PI);
            if ((_phasorResult <= EprMath.halfPI) && (_phasorResult > -EprMath.halfPI))
