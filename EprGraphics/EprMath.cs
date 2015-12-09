@@ -67,11 +67,19 @@ namespace EprGrapics
             result = Math.Sin(fractionPart) + integerPart * 2;
             return result;
         }
+
         public static double ExtendedArcSinSq(double value)
         {
+            double Sign = 1.0;
+            if (value < 0.0)
+            {
+                value = -value;
+                Sign = -1.0;
+            }
             long intpart = (long)Math.Floor(value);
             double fracpart = value - intpart;
-            return Math.Asin(Math.Sqrt(fracpart)) + EprMath.halfPI * intpart;
+            double result = Math.Asin(Math.Sqrt(fracpart)) + EprMath.halfPI * intpart;
+            return result * Sign;
         }
 
         public static double ExtendedArcCosSq(double value)
