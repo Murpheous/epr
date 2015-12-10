@@ -111,7 +111,7 @@ namespace EprGrapics
             else
             {
                 PhotonA.MakeCircular(PhotonAxis, true, phi);
-                PhotonB.MakeCircular(PhotonAxis, false, -phi);
+                PhotonB.MakeCircular(PhotonAxis, false, phi);
             }
             Analyzer_A.ShowDial();
             bool bResultA = PhotonA.Analyze(Analyzer_A,true, lblPhasorA1Theta, lblPhasorA2Theta);
@@ -128,7 +128,7 @@ namespace EprGrapics
 
             int concurCount = 0;
             int dissentCount = 0;
-          
+        
             for (int i = 0; i < 3600; i++)
             {
                 double testAxis = i * Math.PI / 1800.0;
@@ -140,7 +140,7 @@ namespace EprGrapics
                     dissentCount++;
             }
             LblEprCorrelation.Text = string.Format("{0:F1}%", ((double)concurCount / 36.0));
-          
+       
         }
 
         private void btnMalus_Click(object sender, EventArgs e)
@@ -232,8 +232,8 @@ namespace EprGrapics
                     //for (int nPhotonPhase = 0; nPhotonPhase < 360; nPhotonPhase++)
                     //	double dPhotonPhase = (double)nPhotonPhase/ 1.0;
                     
-                    MyPhotonAlice.MakeCircular(dPhotonAngle, true,EprMath.halfPI);
-                    MyPhotonBob.MakeCircular(dPhotonAngle, false,-EprMath.halfPI);
+                    MyPhotonAlice.MakeCircular(dPhotonAngle, true,0);
+                    MyPhotonBob.MakeCircular(dPhotonAngle, false,0);
                     
                     //MyPhotonAlice.MakeElliptical(dPhotonAngle, EprMath.halfPI, Math.PI/2.0, true);
                     //MyPhotonBob.MakeElliptical(dPhotonAngle, EprMath.halfPI, Math.PI, false);

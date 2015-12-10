@@ -38,7 +38,7 @@ namespace EprGrapics
             get {return  _phaseAngle;}
             set { _phaseAngle = EprMath.Limit180(value); }
         }
-
+/**
         public bool Analyze(clFilter analyzer, double IncidentAxis)
         {
            bool bResult = true;
@@ -50,11 +50,10 @@ namespace EprGrapics
            double phaseDelta = (axisDelta - axisDelta * Sense);
            double incidentPhase = EprMath.Limit180(PhaseAngle - IncidentAxis);
            double analyzerPhase = EprMath.Limit180(PhaseAngle - analyzerAxis);
-           /* 
            // Calculate axisDelta as a fraction of 90
-           double shiftSinSq = EprMath.ExtendedSineSq(axisDelta)*Math.PI;
-           double effectivePhase = PhaseAngle*Sense + phaseDelta/2.0;
-           */
+           //double shiftSinSq = EprMath.ExtendedSineSq(axisDelta)*Math.PI;
+           //double effectivePhase = PhaseAngle*Sense + phaseDelta/2.0;
+          
            double effectivePhase = incidentPhase + phaseDelta/4.0;  
            double mappedResult = EprMath.ExtendedSineSq(effectivePhase);
            _phasorResult = EprMath.Limit180(mappedResult* Math.PI);
@@ -63,6 +62,47 @@ namespace EprGrapics
            else
                bResult = false;
             return bResult;
+        }
+**/
+        public bool Analyze(clFilter analyzer, double IncidentAxis)
+        {
+            bool bResult = true;
+            double axisOffset = 0;
+            double resultOffset = 0;
+            // Check the difference is less than 90 degrees, if so, tweak to keep in +- 90
+            double analyzerAxis = EprMath.Limit90(analyzer.Inclination);
+            double incidentAxis = EprMath.Limit90(IncidentAxis);
+            double axisDelta = EprMath.Limit90(incidentAxis - analyzerAxis);
+            if (axisDelta > EprMath.quarterPI)
+            {
+                axisOffset = -EprMath.halfPI;
+                resultOffset = 1;
+                bResult = false;
+            }
+            else if (axisDelta <= -EprMath.quarterPI)
+            {
+                axisOffset = EprMath.halfPI;
+                resultOffset = -1;
+                bResult = false;
+            }
+            axisDelta += axisOffset;
+
+            double shiftSinSq = EprMath.ExtendedSineSq(axisDelta) * Math.PI;
+            double phaseDelta = (shiftSinSq - shiftSinSq * Sense)/2.0;
+            double incidentPhase = EprMath.Limit180(PhaseAngle - IncidentAxis);
+            double analyzerPhase = EprMath.Limit180(PhaseAngle - analyzerAxis);
+            /* 
+            // Calculate axisDelta as a fraction of 90
+            double shiftSinSq = EprMath.ExtendedSineSq(axisDelta)*Math.PI;
+            double effectivePhase = PhaseAngle*Sense + phaseDelta/2.0;
+            */
+            double effectivePhase = incidentPhase + phaseDelta / 2.0;
+            double mappedResult = EprMath.ExtendedSineSq(effectivePhase);
+            mappedResult += resultOffset;
+            _phasorResult = EprMath.Limit180(mappedResult * Math.PI);
+            if ((_phasorResult <= EprMath.halfPI) && (_phasorResult > -EprMath.halfPI))
+                return bResult;
+            return !bResult;
         }
 
 
@@ -237,14 +277,20 @@ namespace EprGrapics
                 int answer;
                 if (Phasors.Count == 0)
                     return true;
-                if (Phasors.Count == 1)
-                    Phasors.Add(new clPhasor(analyzer.Inclination, !Phasors[0].IsClockWise, 0));
                 double mappedAxis = 0;
-                foreach (clPhasor phasor in Phasors)
+                if (Phasors.Count == 1)
                 {
-                    mappedAxis += EprMath.Limit180(phasor.PhaseAngle);
+                    mappedAxis = Phasors[0].PhaseAngle;
+                    //Phasors.Add(new clPhasor(analyzer.Inclination, !Phasors[0].IsClockWise, 0));
                 }
-                mappedAxis = mappedAxis/Phasors.Count;
+                else
+                {
+                    foreach (clPhasor phasor in Phasors)
+                    {
+                        mappedAxis += EprMath.Limit180(phasor.PhaseAngle);
+                    }
+                    mappedAxis = mappedAxis / Phasors.Count;
+                }
                 mappedAxis = EprMath.Limit90(mappedAxis);
  
                 foreach (clPhasor phasor in Phasors)
