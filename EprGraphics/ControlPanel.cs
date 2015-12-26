@@ -120,7 +120,7 @@ namespace EprGrapics
             else
             { }
 
-                Analyzer_B.ShowDial();
+            Analyzer_B.ShowDial();
             bool nResultB = PhotonB.Analyze(Analyzer_B, true,lblPhasorB1Theta, lblPhasorB2Theta);
             lblAnalyzer1Result.Text = bResultA ? "Alice" : "Bob";
             lblAnalyzer2Result.Text = nResultB ? "Alice" : "Bob";
@@ -128,7 +128,7 @@ namespace EprGrapics
 
             int concurCount = 0;
             int dissentCount = 0;
-        
+            /*
             for (int i = 0; i < 3600; i++)
             {
                 double testAxis = i * Math.PI / 1800.0;
@@ -140,7 +140,7 @@ namespace EprGrapics
                     dissentCount++;
             }
             LblEprCorrelation.Text = string.Format("{0:F1}%", ((double)concurCount / 36.0));
-       
+            */
         }
 
         private void btnMalus_Click(object sender, EventArgs e)

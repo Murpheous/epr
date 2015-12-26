@@ -17,11 +17,11 @@ namespace EprGrapics
         double _phaseAngle;
         bool _isClockwise;
         
-        double _phasorResult;
+        double _analyzerMapping;
 
-        public double PhasorResult
+        public double AnalyzerMapping
         {
-        	get {return _phasorResult;}
+        	get {return _analyzerMapping;}
         }
 
         public bool IsClockWise
@@ -56,8 +56,8 @@ namespace EprGrapics
           
            double effectivePhase = incidentPhase + phaseDelta/4.0;  
            double mappedResult = EprMath.ExtendedSineSq(effectivePhase);
-           _phasorResult = EprMath.Limit180(mappedResult* Math.PI);
-           if ((_phasorResult <= EprMath.halfPI) && (_phasorResult > -EprMath.halfPI))
+           _analyzerMapping = EprMath.Limit180(mappedResult* Math.PI);
+           if ((_analyzerMapping <= EprMath.halfPI) && (_analyzerMapping > -EprMath.halfPI))
                bResult = true;
            else
                bResult = false;
@@ -73,22 +73,14 @@ namespace EprGrapics
             double analyzerAxis = EprMath.Limit90(analyzer.Inclination);
             double incidentAxis = EprMath.Limit90(IncidentAxis);
             double axisDelta = EprMath.Limit90(incidentAxis - analyzerAxis);
-            if (axisDelta > EprMath.quarterPI)
-            {
-                axisOffset = -EprMath.halfPI;
-                resultOffset = 1;
-                bResult = false;
-            }
-            else if (axisDelta <= -EprMath.quarterPI)
-            {
-                axisOffset = EprMath.halfPI;
-                resultOffset = -1;
-                bResult = false;
-            }
+            bool towardAxis = false;
+            if (axisDelta < 0)
             axisDelta += axisOffset;
 
+            double phaseDelta = 0;
+
             double shiftSinSq = EprMath.ExtendedSineSq(axisDelta) * Math.PI;
-            double phaseDelta = (shiftSinSq - shiftSinSq * Sense)/2.0;
+            phaseDelta += (shiftSinSq - shiftSinSq * Sense)/2.0;
             double incidentPhase = EprMath.Limit180(PhaseAngle - IncidentAxis);
             double analyzerPhase = EprMath.Limit180(PhaseAngle - analyzerAxis);
             /* 
@@ -98,9 +90,9 @@ namespace EprGrapics
             */
             double effectivePhase = incidentPhase + phaseDelta / 2.0;
             double mappedResult = EprMath.ExtendedSineSq(effectivePhase);
-            mappedResult += resultOffset;
-            _phasorResult = EprMath.Limit180(mappedResult * Math.PI);
-            if ((_phasorResult <= EprMath.halfPI) && (_phasorResult > -EprMath.halfPI))
+            mappedResult = EprMath.Limit180(mappedResult * Math.PI);
+            _analyzerMapping = mappedResult + resultOffset;
+            if ((mappedResult <= EprMath.halfPI) && (mappedResult > -EprMath.halfPI))
                 return bResult;
             return !bResult;
         }
@@ -262,11 +254,11 @@ namespace EprGrapics
                 double phaseDelta = phaseMax - phaseMin; // We scale phase +- 180 to 
                 double phaseMappedDown = ((_spinPhase + Math.PI) / EprMath.twoPI);
                 phaseMappedDown = (phaseMappedDown * phaseDelta) + phaseMin;
-                double _phasorResult = EprMath.Limit180(EprMath.ExtendedAsin(phaseMappedDown));
-                isAlice = ((_phasorResult > (-EprMath.halfPI)) && (_phasorResult <= EprMath.halfPI));
+                double _analyzerMapping = EprMath.Limit180(EprMath.ExtendedAsin(phaseMappedDown));
+                isAlice = ((_analyzerMapping > (-EprMath.halfPI)) && (_analyzerMapping <= EprMath.halfPI));
                 if (bShow && analyzer.GotPicture())
                 {
-                    analyzer.ShowMapping(_phasorResult,axisResult,phaseCieling,phaseFloor, lblPhasor1, lblPhasor2);
+                    analyzer.ShowMapping(_analyzerMapping,axisResult,phaseCieling,phaseFloor, lblPhasor1, lblPhasor2);
                 }
                 return isAlice;
             }
@@ -396,23 +388,23 @@ namespace EprGrapics
             Point PtEnd;
             foreach (clPhasor ph in mappedPhasors)
             {
-                nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + ph.PhasorResult)));
-                nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + ph.PhasorResult)));
+                nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + ph.AnalyzerMapping)));
+                nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + ph.AnalyzerMapping)));
                 PtEnd = new Point(nCentreX + nX, nCentreY - nY);
                 MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             }
             if (!ShowAll) 
                 return;
-            nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + mappedPhasors[0].PhasorResult)));
-            nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + mappedPhasors[0].PhasorResult)));
+            nX = (int)(Math.Round(nRadius * Math.Sin(_analyzerAxis * 2.0 + mappedPhasors[0].AnalyzerMapping)));
+            nY = (int)(Math.Round(nRadius * Math.Cos(_analyzerAxis * 2.0 + mappedPhasors[0].AnalyzerMapping)));
             PtEnd = new Point(nCentreX + nX, nCentreY - nY);
 
             //MyGraphics.DrawLine(MyPenB, PtCentre, PtEnd);
             if (lblPhasor1 != null)
-                lblPhasor1.Text = string.Format("{0:F2}°", (mappedPhasors[0].PhasorResult * 180) / Math.PI);
+                lblPhasor1.Text = string.Format("{0:F2}°", (mappedPhasors[0].AnalyzerMapping * 180) / Math.PI);
             if (lblPhasor2 != null)
                 if (mappedPhasors.Count > 1)
-                    lblPhasor2.Text = string.Format("{0:F2}°", (mappedPhasors[1].PhasorResult * 180) / Math.PI);
+                    lblPhasor2.Text = string.Format("{0:F2}°", (mappedPhasors[1].AnalyzerMapping * 180) / Math.PI);
                 else
                     lblPhasor2.Text = "--";
             MyPicture.Image = MyBitmap;
