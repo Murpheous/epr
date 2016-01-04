@@ -73,8 +73,16 @@ namespace EprGrapics
             double analyzerAxis = EprMath.Limit90(analyzer.Inclination);
             double incidentAxis = EprMath.Limit90(IncidentAxis);
             double axisDelta = EprMath.Limit90(incidentAxis - analyzerAxis);
-            bool towardAxis = false;
-            if (axisDelta < 0)
+            if (axisDelta > EprMath.quarterPI)
+            {
+                axisDelta = axisDelta - EprMath.halfPI;
+                bResult = false;
+            }
+            else if (axisDelta <= -EprMath.quarterPI)
+            {
+                axisDelta = axisDelta + EprMath.halfPI;
+                bResult = false;
+            }
             axisDelta += axisOffset;
 
             double phaseDelta = 0;
